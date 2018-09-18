@@ -6,14 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static ris58h.goleador.core.Utils.readInputToString;
 
 public class ScoresProcessor {
-    private static final Pattern SCORE_PATTERN = Pattern.compile("\\d-\\d");
 
     public static void process(String dirName, String inSuffix, String outFileName) throws Exception {
         Path dirPath = Paths.get(dirName);
@@ -27,15 +24,8 @@ public class ScoresProcessor {
                 try (InputStream is = new BufferedInputStream(new FileInputStream(path.toFile()))) {
                     text = readInputToString(is);
                 }
-                Matcher matcher = SCORE_PATTERN.matcher(text);
-                if (matcher.find()) {
-                    String scoreString = text.substring(matcher.start(), matcher.end());
-                    String[] split = scoreString.split("-");
-                    Score score = Score.of(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
-                    if (matcher.find()) {
-                        System.out.println("Multiple scores found in " + path.toAbsolutePath());
-                        continue;
-                    }
+                Score score = ScoreMatcher.find(text);
+                if (score != null) {
                     String name = path.getName(path.getNameCount() - 1).toString();
                     String prefix = name.substring(0, name.length() - inPostfix.length());
                     int frameNumber = Integer.parseInt(prefix);
