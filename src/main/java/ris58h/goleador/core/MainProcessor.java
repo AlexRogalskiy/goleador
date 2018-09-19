@@ -5,6 +5,7 @@ public class MainProcessor {
         FramesProcessor.process(videoId, dirName, "-monochrome");
         PreOcrProcessor.process(dirName, "-monochrome", "-preocr");
         OcrProcessor.process(dirName, "-preocr", "-text");
-        ScoresProcessor.process(dirName, "-text", "timestamps.txt");
+        ScoresProcessor.process(dirName, "-text", "-score");
+        TimestampsProcessor.process(dirName, "-score", "timestamps.txt");
     }
 }
