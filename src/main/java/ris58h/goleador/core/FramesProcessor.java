@@ -6,9 +6,9 @@ public class FramesProcessor {
     public static void process(String videoId, String dirName, String suffix) throws Exception {
 //        String format = "135"; // 480p
         String format = "136"; // 720p
-        System.out.println("Fetching video URL for format " + format);
+        System.out.println("Fetching video URL for videoId=" + videoId + " and format=" + format);
         String videoUrl = fetchVideoUrl(videoId, format);
-        System.out.println("Video URL for format " + format + ": " + videoUrl);
+        System.out.println("Video URL for videoId=" + videoId + " and format=" + format + ": " + videoUrl);
 
 //        String width = "400";
 //        String height = "100";
