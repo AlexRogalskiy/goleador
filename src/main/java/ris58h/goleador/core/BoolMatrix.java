@@ -23,8 +23,16 @@ public class BoolMatrix {
             throw new IllegalArgumentException();
         }
         BoolMatrix result = new BoolMatrix(bm1.width, bm1.height);
-        for (int i = 0; i < bm1.width * bm1.height; i++) {
+        for (int i = 0; i < bm1.buffer.length; i++) {
             result.buffer[i] = bm1.buffer[i] || bm2.buffer[i];
+        }
+        return result;
+    }
+
+    public static BoolMatrix not(BoolMatrix bm) {
+        BoolMatrix result = new BoolMatrix(bm.width, bm.height);
+        for (int i = 0; i < bm.buffer.length; i++) {
+            result.buffer[i] = !bm.buffer[i];
         }
         return result;
     }
