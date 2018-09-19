@@ -9,8 +9,8 @@ video_id=$1
 dir=$2
 suffix=$3
 stream=$(youtube-dl -f $format -g https://www.youtube.com/watch?v=$video_id)
-ffmpeg -i $stream -f lavfi -i color=gray:size=${w}x${h} -f lavfi -i color=black:size=${w}x${h} -f lavfi -i color=white:size=${w}x${h} \
+ffmpeg -i $stream \
  -filter_complex \
  "[0:v]crop=$w:$h:${ow}:${oh}[crop]; \
- [crop][1:v][2:v][3:v]threshold" \
+ [crop]format=gray" \
 -r $fps $dir/%04d$suffix.png
