@@ -16,7 +16,7 @@ public class OcrProcessor {
             for (Path path : stream) {
                 String name = path.getName(path.getNameCount() - 1).toString();
                 String prefix = name.substring(0, name.length() - inPostfix.length());
-                Path outPath = path.getParent().resolve(prefix + outSuffix);
+                Path outPath = path.resolveSibling(prefix + outSuffix);
                 String command = "tesseract " + path.toAbsolutePath() + " " + outPath.toAbsolutePath();
                 Process process = runtime.exec(command);
                 process.waitFor();

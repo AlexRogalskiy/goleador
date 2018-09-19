@@ -88,7 +88,7 @@ public class PreOcrProcessor {
                 }
                 String name = path.getName(path.getNameCount() - 1).toString();
                 String prefix = name.substring(0, name.length() - inPostfix.length());
-                Path outPath = path.getParent().resolve(prefix + outSuffix + ".png");
+                Path outPath = path.resolveSibling(prefix + outSuffix + ".png");
                 drawBoolMatrix(outMatrix, outPath.toFile());
             }
         }
