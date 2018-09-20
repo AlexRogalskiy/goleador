@@ -8,6 +8,7 @@ class ScoreMatcherTest {
 
     private void testFind(String text, int expectedScoreLeft, int expectedScoreRight) {
         Score score = ScoreMatcher.find(text);
+        assertNotNull(score);
         assertEquals(expectedScoreLeft, score.left);
         assertEquals(expectedScoreRight, score.right);
     }
@@ -25,5 +26,10 @@ class ScoreMatcherTest {
     @Test
     void noisyInput() {
         testFind("#8 90:00 INT 2 1 TOT", 2, 1);
+    }
+
+    @Test
+    void symbolsAround() {
+        testFind("3:22 BAYERN |3-1) B LEVERKUSEN 4", 3, 1);
     }
 }
