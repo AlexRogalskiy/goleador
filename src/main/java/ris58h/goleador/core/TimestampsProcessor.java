@@ -1,6 +1,7 @@
 package ris58h.goleador.core;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,21 +38,17 @@ public class TimestampsProcessor {
             timestamps = Collections.emptyList();
         } else {
             System.out.println("Finding timestamps");
-            List<Integer> goals = scoreChangedFrames(scores);
-            timestamps = goals.stream()
+            List<Integer> changes = scoreChangedFrames(scores);
+            List<String> changeLines = changes.stream().map(Object::toString).collect(Collectors.toList());
+            Files.write(dirPath.resolve("score-frames.txt"), changeLines, Charset.forName("UTF-8"));
+            timestamps = changes.stream()
                     .map(frame -> frame - 1) // The first frame is a thumbnail.
                     .map(frame -> frame - 1) //TODO: Is the second one a thumbnail too?!
                     .map(frame -> Integer.max(0, frame - 15)) // We interested in time that is seconds before score changed.
                     .map(Utils::timestamp)
                     .collect(Collectors.toList());
         }
-        File timestampsFile = dirPath.resolve(outFileName).toFile();
-        try (Writer writer = new BufferedWriter(new FileWriter(timestampsFile))) {
-            for (String ts : timestamps) {
-                writer.write(ts + "\n");
-            }
-            writer.flush();
-        }
+        Files.write(dirPath.resolve(outFileName), timestamps, Charset.forName("UTF-8"));
     }
 
     static List<Integer> scoreChangedFrames(SortedMap<Integer, Score> scores) {
