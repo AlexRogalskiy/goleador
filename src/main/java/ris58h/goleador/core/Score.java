@@ -26,4 +26,14 @@ public class Score {
         }
         return new Score(left, right);
     }
+
+    @Override
+    public String toString() {
+        return this.left + "-" + this.right;
+    }
+
+    public static Score parseScore(String s) {
+        String[] split = s.split("-");
+        return Score.of(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+    }
 }

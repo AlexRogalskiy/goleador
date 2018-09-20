@@ -23,8 +23,7 @@ public class TimestampsProcessor {
                 try (InputStream is = new BufferedInputStream(new FileInputStream(path.toFile()))) {
                     scoreString = readInputToString(is);
                 }
-                String[] split = scoreString.split("-");
-                Score score = Score.of(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+                Score score = Score.parseScore(scoreString);
                 String name = path.getName(path.getNameCount() - 1).toString();
                 String prefix = name.substring(0, name.length() - inPostfix.length());
                 int frameNumber = Integer.parseInt(prefix);
@@ -55,17 +54,22 @@ public class TimestampsProcessor {
         }
     }
 
-    private static List<Integer> scoreChangedFrames(SortedMap<Integer, Score> scores) {
+    static List<Integer> scoreChangedFrames(SortedMap<Integer, Score> scores) {
         List<Integer> goals = new ArrayList<>();
         Score prevScore = Score.of(0, 0); // Score should start with 0-0.
         for (Map.Entry<Integer, Score> entry : scores.entrySet()) {
-            Integer time = entry.getKey();
+            Integer frame = entry.getKey();
             Score score = entry.getValue();
-            if ((score.left == prevScore.left + 1 && score.right == prevScore.right)
-                    || (score.left == prevScore.left && score.right == prevScore.right + 1)) {
-                goals.add(time);
+            boolean leftSame = score.left == prevScore.left;
+            boolean leftChanged = score.left == prevScore.left + 1;
+            boolean rightSame = score.right == prevScore.right;
+            boolean rightChanged = score.right == prevScore.right + 1;
+            if ((leftSame || leftChanged) && (rightSame || rightChanged)) {
+                if ((leftChanged && rightSame) || (leftSame && rightChanged)) {
+                    goals.add(frame);
+                }
+                prevScore = score;
             }
-            prevScore = score;
         }
         return goals;
     }
