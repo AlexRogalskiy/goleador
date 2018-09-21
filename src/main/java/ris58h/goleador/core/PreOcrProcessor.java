@@ -49,19 +49,17 @@ public class PreOcrProcessor {
 
         System.out.println("Thresholding intensity matrix");
         int thresholdBlack = getThreshold(intensityMatrix, framesCount, true);
-        BoolMatrix intensityBlack = toBoolMatrix(intensityMatrix, thresholdBlack, true);
-        drawBoolMatrix(intensityBlack, dirPath.resolve("intensity-black.png").toFile());
+        BoolMatrix staticBlack = toBoolMatrix(intensityMatrix, thresholdBlack, true);
+        drawBoolMatrix(staticBlack, dirPath.resolve("static-black.png").toFile());
         int thresholdWhite = getThreshold(intensityMatrix, framesCount, false);
-        BoolMatrix intensityWhite = toBoolMatrix(intensityMatrix, thresholdWhite, false);
-        drawBoolMatrix(intensityWhite, dirPath.resolve("intensity-white.png").toFile());
+        BoolMatrix staticWhite = toBoolMatrix(intensityMatrix, thresholdWhite, false);
+        drawBoolMatrix(staticWhite, dirPath.resolve("static-white.png").toFile());
 
-        int minRectWidth = 10;
-        int minRectHeight = 10;
-        System.out.println("Detecting rectangles");
-        BoolMatrix rectsBlack = RectFiller.detectAndFillRects(intensityBlack, minRectWidth, minRectHeight);
-        drawBoolMatrix(rectsBlack, dirPath.resolve("rects-black.png").toFile());
-        BoolMatrix rectsWhite = RectFiller.detectAndFillRects(intensityWhite, minRectWidth, minRectHeight);
-        drawBoolMatrix(rectsWhite, dirPath.resolve("rects-white.png").toFile());
+        System.out.println("Filling holes");
+        BinaryFiller.fillHoles(staticBlack, false);
+        drawBoolMatrix(staticBlack, dirPath.resolve("filled-black.png").toFile());
+        BinaryFiller.fillHoles(staticWhite, false);
+        drawBoolMatrix(staticWhite, dirPath.resolve("filled-white.png").toFile());
 
         int width = intensityMatrix.width;
         int height = intensityMatrix.height;
@@ -78,8 +76,8 @@ public class PreOcrProcessor {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         int i = width * y + x;
-                        boolean inBlackRect = rectsBlack.buffer[i];
-                        boolean inWhiteRect = rectsWhite.buffer[i];
+                        boolean inBlackRect = staticBlack.buffer[i];
+                        boolean inWhiteRect = staticWhite.buffer[i];
                         boolean isBlack = image.getRGB(x, y) == RGB_BLACK;
                         if ((inBlackRect && !isBlack) || (inWhiteRect && isBlack)) {
                             outMatrix.buffer[i] = true;
