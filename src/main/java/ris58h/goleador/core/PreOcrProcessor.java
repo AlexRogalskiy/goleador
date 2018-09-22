@@ -23,7 +23,7 @@ public class PreOcrProcessor {
     private static final int BATCH_COLOR_DELTA = 2;
     private static final int COLOR_BLACK = 0;
     private static final int COLOR_WHITE = 255;
-    private static final int MORPH_COUNT = 5;
+    private static final int MORPH_COUNT = 7;
 
     public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
         Path dirPath = Paths.get(dirName);
