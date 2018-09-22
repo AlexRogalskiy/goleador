@@ -147,7 +147,7 @@ public class PreOcrProcessor {
                     for (int x = 0; x < width; x++) {
                         boolean insideBlackShape = staticBlack.get(x, y) == COLOR_WHITE;
                         boolean insideWhiteShape = staticWhite.get(x, y) == COLOR_WHITE;
-                        boolean isBlack = image.get(x, y) == COLOR_BLACK;
+                        boolean isBlack = image.get(x, y) < 127;
                         boolean masked = (insideBlackShape && !isBlack) || (insideWhiteShape && isBlack);
                         image.set(x, y, masked ? COLOR_BLACK : COLOR_WHITE);
                     }
