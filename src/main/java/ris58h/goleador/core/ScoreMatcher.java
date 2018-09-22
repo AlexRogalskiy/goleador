@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public class ScoreMatcher {
     private static final String SEPARATOR_REGEX = "[- ]";
-    private static final Pattern SCORE_PATTERN = Pattern.compile("\\W\\d" + SEPARATOR_REGEX + "\\d\\W");
+    private static final Pattern SCORE_PATTERN = Pattern.compile("(^|\\W)\\d" + SEPARATOR_REGEX + "\\d(\\W|$)");
 
     public static Score find(String text) {
         Matcher matcher = SCORE_PATTERN.matcher(text);

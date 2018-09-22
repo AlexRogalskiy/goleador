@@ -32,4 +32,14 @@ class ScoreMatcherTest {
     void symbolsAround() {
         testFind("3:22 BAYERN |3-1) B LEVERKUSEN 4", 3, 1);
     }
+
+    @Test
+    void scoreAtTheBegin() {
+        testFind("2-0 som text", 2, 0);
+    }
+
+    @Test
+    void scoreAtTheEnd() {
+        testFind("some text 2-0", 2, 0);
+    }
 }
