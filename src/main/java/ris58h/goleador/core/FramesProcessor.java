@@ -14,13 +14,9 @@ public class FramesProcessor {
 //        String height = "100";
         String width = "500";
         String height = "150";
-        String lavfiSize = width + "x" + height;
         String cropSize = width + ":" + height + ":0:0";
         String command = "ffmpeg -i " + videoUrl +
-                " -f lavfi -i color=gray:size=" + lavfiSize +
-                " -f lavfi -i color=black:size=" + lavfiSize +
-                " -f lavfi -i color=white:size=" + lavfiSize +
-                " -filter_complex [0:v]crop=" + cropSize + "[crop];[crop][1:v][2:v][3:v]threshold" +
+                " -filter_complex [0:v]crop=" + cropSize + "[crop];[crop]format=gray" +
                 " -r 1 " + dirName + "/%04d" + suffix + ".png";
         System.out.println("Downloading video frames");
         long before = System.currentTimeMillis();

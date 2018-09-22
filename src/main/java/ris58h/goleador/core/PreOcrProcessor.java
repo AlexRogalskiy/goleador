@@ -1,5 +1,11 @@
 package ris58h.goleador.core;
 
+import ij.ImagePlus;
+import ij.io.FileSaver;
+import ij.io.Opener;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -8,38 +14,77 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.*;
 
 public class PreOcrProcessor {
     private static final int RGB_BLACK = -16777216;
     private static final int RGB_WHITE = -1;
+    private static final int BATCH_SIZE = 5;
+    public static final int BATCH_COLOR_DELTA = 2;
 
     public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
         Path dirPath = Paths.get(dirName);
         String inPostfix = inSuffix + ".png";
         String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
         IntMatrix intensityMatrix = null;
-        int framesCount = 0;
+        IntMatrix colorMatrix = null;
+        ArrayDeque<ImageProcessor> batch = new ArrayDeque<>(BATCH_SIZE);
+        int[] batchColors = new int[BATCH_SIZE];
+        int width = -1;
+        int height = -1;
+        Opener opener = new Opener();
         System.out.println("Building intensity matrix");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
+            List<Path> sortedPaths = new ArrayList<>();
             for (Path path : stream) {
-                BufferedImage image = ImageIO.read(path.toFile());
-                int imageWidth = image.getWidth();
-                int imageHeight = image.getHeight();
+                sortedPaths.add(path);
+            }
+            sortedPaths.sort(Comparator.comparing(Path::toString));
+            for (Path path : sortedPaths) {
+                ImagePlus imagePlus = opener.openImage(path.toAbsolutePath().toString());
+                ImageProcessor ip = imagePlus.getProcessor();
+                int imageWidth = ip.getWidth();
+                int imageHeight = ip.getHeight();
                 if (intensityMatrix == null) {
                     intensityMatrix = new IntMatrix(imageWidth, imageHeight);
+                    colorMatrix = new IntMatrix(imageWidth, imageHeight);
+                    width = imageWidth;
+                    height = imageHeight;
                 } else {
-                    if (imageWidth != intensityMatrix.width || imageHeight != intensityMatrix.height) {
+                    if (imageWidth != width || imageHeight != height) {
                         throw new RuntimeException();
                     }
                 }
-                for (int y = 0; y < intensityMatrix.height; y++) {
-                    for (int x = 0; x < intensityMatrix.width; x++) {
-                        if (image.getRGB(x, y) == RGB_BLACK) {
-                            intensityMatrix.buffer[y * intensityMatrix.width + x] += 1;
+                batch.add(ip);
+                if (batch.size() == BATCH_SIZE) {
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            int index = y * width + x;
+                            int sum = 0;
+                            int i = 0;
+                            for (ImageProcessor batchItem : batch) {
+                                int batchItemColor = batchItem.get(x, y);
+                                batchColors[i] = batchItemColor;
+                                sum += batchItemColor;
+                                i++;
+                            }
+                            int avgColor = sum / BATCH_SIZE;
+                            boolean sameColor = true;
+                            for (int batchColor : batchColors) {
+                                int absDelta = Math.abs(avgColor - batchColor);
+                                if (absDelta > BATCH_COLOR_DELTA) {
+                                    sameColor = false;
+                                    break;
+                                }
+                            }
+                            if (sameColor) {
+                                intensityMatrix.buffer[index] += 1;
+                                colorMatrix.buffer[index] += avgColor;
+                            }
                         }
                     }
+                    batch.clear();
                 }
-                framesCount++;
             }
         }
 
@@ -48,11 +93,32 @@ public class PreOcrProcessor {
         }
 
         System.out.println("Thresholding intensity matrix");
-        int thresholdBlack = getThreshold(intensityMatrix, framesCount, true);
-        BoolMatrix staticBlack = toBoolMatrix(intensityMatrix, thresholdBlack, true);
+        ByteProcessor staticGray = new ByteProcessor(width, height);
+        byte[] grayPixels = (byte[]) staticGray.getPixels();
+        BoolMatrix staticBlack = new BoolMatrix(width, height);
+        BoolMatrix staticWhite = new BoolMatrix(width, height);
+        int intensityThreshold = getIntensityThreshold(intensityMatrix);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int index = y * width + x;
+                int intensity = intensityMatrix.buffer[index];
+                if (intensity > intensityThreshold) {
+                    int sumColor = colorMatrix.buffer[index];
+                    int color = sumColor / intensity;
+                    grayPixels[index] = (byte) color;
+                    if (color > 127) {
+                        staticWhite.buffer[index] = true;
+                    } else {
+                        staticBlack.buffer[index] = true;
+                    }
+                } else {
+                    grayPixels[index] = (byte) 255;
+                }
+            }
+        }
+        new FileSaver(new ImagePlus(null, staticGray))
+                .saveAsPng(dirPath.resolve("static-gray.png").toAbsolutePath().toString());
         drawBoolMatrix(staticBlack, dirPath.resolve("static-black.png").toFile());
-        int thresholdWhite = getThreshold(intensityMatrix, framesCount, false);
-        BoolMatrix staticWhite = toBoolMatrix(intensityMatrix, thresholdWhite, false);
         drawBoolMatrix(staticWhite, dirPath.resolve("static-white.png").toFile());
 
         System.out.println("Filling holes");
@@ -61,8 +127,6 @@ public class PreOcrProcessor {
         BinaryFiller.fillHoles(staticWhite, false);
         drawBoolMatrix(staticWhite, dirPath.resolve("filled-white.png").toFile());
 
-        int width = intensityMatrix.width;
-        int height = intensityMatrix.height;
         System.out.println("Preparing images");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             for (Path path : stream) {
@@ -92,19 +156,17 @@ public class PreOcrProcessor {
         }
     }
 
-    private static int getThreshold(IntMatrix intensityMatrix, int framesCount, boolean high) {
+    private static int getIntensityThreshold(IntMatrix intensityMatrix) {
         int sum = 0;
         int maxValue = 0;
         for (int intensity : intensityMatrix.buffer) {
-            int value = high ? intensity : framesCount - intensity;
-            sum += value;
-            if (value > maxValue) {
-                maxValue = value;
+            sum += intensity;
+            if (intensity > maxValue) {
+                maxValue = intensity;
             }
         }
         int avg = sum / intensityMatrix.buffer.length;
-        int tr = (avg + maxValue) / 2;
-        return high ? tr : framesCount - tr;
+        return avg;
     }
 
     private static BoolMatrix toBoolMatrix(IntMatrix intMatrix, int threshold, boolean high) {
