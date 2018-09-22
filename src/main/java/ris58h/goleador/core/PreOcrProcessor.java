@@ -1,15 +1,16 @@
 package ris58h.goleador.core;
 
 import ij.ImagePlus;
-import ij.io.FileSaver;
 import ij.io.Opener;
+import ij.plugin.filter.Binary;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,10 +18,10 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class PreOcrProcessor {
-    private static final int RGB_BLACK = -16777216;
-    private static final int RGB_WHITE = -1;
     private static final int BATCH_SIZE = 5;
     public static final int BATCH_COLOR_DELTA = 2;
+    public static final int COLOR_BLACK = 0;
+    public static final int COLOR_WHITE = 255;
 
     public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
         Path dirPath = Paths.get(dirName);
@@ -41,8 +42,7 @@ public class PreOcrProcessor {
             }
             sortedPaths.sort(Comparator.comparing(Path::toString));
             for (Path path : sortedPaths) {
-                ImagePlus imagePlus = opener.openImage(path.toAbsolutePath().toString());
-                ImageProcessor ip = imagePlus.getProcessor();
+                ImageProcessor ip = readImage(path.toFile());
                 int imageWidth = ip.getWidth();
                 int imageHeight = ip.getHeight();
                 if (intensityMatrix == null) {
@@ -94,9 +94,8 @@ public class PreOcrProcessor {
 
         System.out.println("Thresholding intensity matrix");
         ByteProcessor staticGray = new ByteProcessor(width, height);
-        byte[] grayPixels = (byte[]) staticGray.getPixels();
-        BoolMatrix staticBlack = new BoolMatrix(width, height);
-        BoolMatrix staticWhite = new BoolMatrix(width, height);
+        ImageProcessor staticBlack = new ByteProcessor(width, height);
+        ImageProcessor staticWhite = new ByteProcessor(width, height);
         int intensityThreshold = getIntensityThreshold(intensityMatrix);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -105,53 +104,47 @@ public class PreOcrProcessor {
                 if (intensity > intensityThreshold) {
                     int sumColor = colorMatrix.buffer[index];
                     int color = sumColor / intensity;
-                    grayPixels[index] = (byte) color;
+                    staticGray.set(x, y, color);
                     if (color > 127) {
-                        staticWhite.buffer[index] = true;
+                        staticWhite.set(x, y, COLOR_WHITE);
                     } else {
-                        staticBlack.buffer[index] = true;
+                        staticBlack.set(x, y, COLOR_WHITE);
                     }
-                } else {
-                    grayPixels[index] = (byte) 255;
                 }
             }
         }
-        new FileSaver(new ImagePlus(null, staticGray))
-                .saveAsPng(dirPath.resolve("static-gray.png").toAbsolutePath().toString());
-        drawBoolMatrix(staticBlack, dirPath.resolve("static-black.png").toFile());
-        drawBoolMatrix(staticWhite, dirPath.resolve("static-white.png").toFile());
+        writeImage(staticGray, dirPath.resolve("static-gray.png").toFile());
+        writeImage(staticBlack, dirPath.resolve("static-black.png").toFile());
+        writeImage(staticWhite, dirPath.resolve("static-white.png").toFile());
 
         System.out.println("Filling holes");
-        BinaryFiller.fillHoles(staticBlack, false);
-        drawBoolMatrix(staticBlack, dirPath.resolve("filled-black.png").toFile());
-        BinaryFiller.fillHoles(staticWhite, false);
-        drawBoolMatrix(staticWhite, dirPath.resolve("filled-white.png").toFile());
+        fillHoles(staticBlack);
+        fillHoles(staticWhite);
+        writeImage(staticBlack, dirPath.resolve("mask-black.png").toFile());
+        writeImage(staticWhite, dirPath.resolve("mask-white.png").toFile());
 
         System.out.println("Preparing images");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             for (Path path : stream) {
-                BufferedImage image = ImageIO.read(path.toFile());
+                ImageProcessor image = readImage(path.toFile());
                 int imageWidth = image.getWidth();
                 int imageHeight = image.getHeight();
                 if (imageWidth != width || imageHeight != height) {
                     throw new RuntimeException();
                 }
-                BoolMatrix outMatrix = new BoolMatrix(width, height);
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
-                        int i = width * y + x;
-                        boolean inBlackRect = staticBlack.buffer[i];
-                        boolean inWhiteRect = staticWhite.buffer[i];
-                        boolean isBlack = image.getRGB(x, y) == RGB_BLACK;
-                        if ((inBlackRect && !isBlack) || (inWhiteRect && isBlack)) {
-                            outMatrix.buffer[i] = true;
-                        }
+                        boolean insideBlackShape = staticBlack.get(x, y) == COLOR_WHITE;
+                        boolean insideWhiteShape = staticWhite.get(x, y) == COLOR_WHITE;
+                        boolean isBlack = image.get(x, y) == COLOR_BLACK;
+                        boolean masked = (insideBlackShape && !isBlack) || (insideWhiteShape && isBlack);
+                        image.set(x, y, masked ? COLOR_BLACK : COLOR_WHITE);
                     }
                 }
                 String name = path.getName(path.getNameCount() - 1).toString();
                 String prefix = name.substring(0, name.length() - inPostfix.length());
                 Path outPath = path.resolveSibling(prefix + outSuffix + ".png");
-                drawBoolMatrix(outMatrix, outPath.toFile());
+                writeImage(image, outPath.toFile());
             }
         }
     }
@@ -169,32 +162,18 @@ public class PreOcrProcessor {
         return avg;
     }
 
-    private static BoolMatrix toBoolMatrix(IntMatrix intMatrix, int threshold, boolean high) {
-        boolean[] buffer = new boolean[intMatrix.width * intMatrix.height];
-        for (int i = 0; i < buffer.length; i++) {
-            if (high) {
-                if (intMatrix.buffer[i] > threshold) {
-                    buffer[i] = true;
-                }
-            } else {
-                if (intMatrix.buffer[i] < threshold) {
-                    buffer[i] = true;
-                }
-            }
-        }
-        return new BoolMatrix(intMatrix.width, intMatrix.height, buffer);
+    private static ImageProcessor readImage(File file) {
+        ImagePlus imagePlus = new Opener().openImage(file.getAbsolutePath());
+        return imagePlus.getProcessor();
     }
 
-    private static void drawBoolMatrix(BoolMatrix boolMatrix, File file) throws IOException {
-        int width = boolMatrix.width;
-        int height = boolMatrix.height;
-        BufferedImage outImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int color = boolMatrix.buffer[y * width + x] ? RGB_BLACK : RGB_WHITE;
-                outImage.setRGB(x, y, color);
-            }
-        }
-        ImageIO.write(outImage, "png", file);
+    private static void writeImage(ImageProcessor ip, File file) throws IOException {
+        ImageIO.write(ip.getBufferedImage(), "png", file);
+    }
+
+    private static void fillHoles(ImageProcessor ip) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method fillMethod = Binary.class.getDeclaredMethod("fill", ImageProcessor.class, int.class, int.class);
+        fillMethod.setAccessible(true);
+        fillMethod.invoke(new Binary(), ip, COLOR_WHITE, COLOR_BLACK);
     }
 }
