@@ -15,7 +15,7 @@ public class TimestampsProcessor {
     public static void process(String dirName, String inSuffix, String outFileName) throws Exception {
         Path dirPath = Paths.get(dirName);
         String inPostfix = inSuffix + ".txt";
-        String inGlob = "*" + inPostfix;
+        String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
         SortedMap<Integer, Score> scores = new TreeMap<>();
         System.out.println("Loadings scores");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {

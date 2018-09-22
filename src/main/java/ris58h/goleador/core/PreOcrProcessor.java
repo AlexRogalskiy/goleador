@@ -16,7 +16,7 @@ public class PreOcrProcessor {
     public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
         Path dirPath = Paths.get(dirName);
         String inPostfix = inSuffix + ".png";
-        String inGlob = "*" + inPostfix;
+        String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
         IntMatrix intensityMatrix = null;
         int framesCount = 0;
         System.out.println("Building intensity matrix");

@@ -14,7 +14,7 @@ public class ScoresProcessor {
     public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
         Path dirPath = Paths.get(dirName);
         String inPostfix = inSuffix + ".txt";
-        String inGlob = "*" + inPostfix;
+        String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
         System.out.println("Extracting scores");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             for (Path path : stream) {

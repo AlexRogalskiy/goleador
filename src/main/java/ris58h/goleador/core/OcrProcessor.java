@@ -10,7 +10,7 @@ public class OcrProcessor {
         Runtime runtime = Runtime.getRuntime();
         Path dirPath = Paths.get(dirName);
         String inPostfix = inSuffix + ".png";
-        String inGlob = "*" + inPostfix;
+        String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
         System.out.println("OCR frames");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             for (Path path : stream) {
