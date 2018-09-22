@@ -3,6 +3,7 @@ package ris58h.goleador.core;
 import ij.ImagePlus;
 import ij.io.Opener;
 import ij.plugin.filter.Binary;
+import ij.process.BinaryProcessor;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
@@ -19,9 +20,10 @@ import java.util.*;
 
 public class PreOcrProcessor {
     private static final int BATCH_SIZE = 5;
-    public static final int BATCH_COLOR_DELTA = 2;
-    public static final int COLOR_BLACK = 0;
-    public static final int COLOR_WHITE = 255;
+    private static final int BATCH_COLOR_DELTA = 2;
+    private static final int COLOR_BLACK = 0;
+    private static final int COLOR_WHITE = 255;
+    private static final int MORPH_COUNT = 5;
 
     public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
         Path dirPath = Paths.get(dirName);
@@ -33,7 +35,6 @@ public class PreOcrProcessor {
         int[] batchColors = new int[BATCH_SIZE];
         int width = -1;
         int height = -1;
-        Opener opener = new Opener();
         System.out.println("Building intensity matrix");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             List<Path> sortedPaths = new ArrayList<>();
@@ -94,8 +95,8 @@ public class PreOcrProcessor {
 
         System.out.println("Thresholding intensity matrix");
         ByteProcessor staticGray = new ByteProcessor(width, height);
-        ImageProcessor staticBlack = new ByteProcessor(width, height);
-        ImageProcessor staticWhite = new ByteProcessor(width, height);
+        BinaryProcessor staticBlack = new BinaryProcessor(new ByteProcessor(width, height));
+        BinaryProcessor staticWhite = new BinaryProcessor(new ByteProcessor(width, height));
         int intensityThreshold = getIntensityThreshold(intensityMatrix);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -117,9 +118,19 @@ public class PreOcrProcessor {
         writeImage(staticBlack, dirPath.resolve("static-black.png").toFile());
         writeImage(staticWhite, dirPath.resolve("static-white.png").toFile());
 
-        System.out.println("Filling holes");
+        System.out.println("Making masks");
         fillHoles(staticBlack);
         fillHoles(staticWhite);
+        writeImage(staticBlack, dirPath.resolve("filled-black.png").toFile());
+        writeImage(staticWhite, dirPath.resolve("filled-white.png").toFile());
+        for (int i = 0; i < MORPH_COUNT; i++) {
+            staticBlack.dilate();
+            staticWhite.dilate();
+        }
+        for (int i = 0; i < MORPH_COUNT; i++) {
+            staticBlack.erode();
+            staticWhite.erode();
+        }
         writeImage(staticBlack, dirPath.resolve("mask-black.png").toFile());
         writeImage(staticWhite, dirPath.resolve("mask-white.png").toFile());
 
