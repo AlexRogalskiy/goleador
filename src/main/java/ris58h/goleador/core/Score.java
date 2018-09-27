@@ -1,5 +1,7 @@
 package ris58h.goleador.core;
 
+import java.util.Objects;
+
 public class Score {
 
     private static int CACHE_DIMENSION = 10;
@@ -30,6 +32,20 @@ public class Score {
     @Override
     public String toString() {
         return this.left + "-" + this.right;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Score score = (Score) o;
+        return left == score.left &&
+                right == score.right;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right);
     }
 
     public static Score parseScore(String s) {

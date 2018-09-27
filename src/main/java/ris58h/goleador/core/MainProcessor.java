@@ -6,6 +6,6 @@ public class MainProcessor {
         PreOcrProcessor.process(dirName, "-gray", "-preocr");
         OcrProcessor.process(dirName, "-preocr", "-text");
         ScoresProcessor.process(dirName, "-text", "-score");
-        TimestampsProcessor.process(dirName, "-score", "timestamps.txt");
+        ReduceScoresProcessor.process(dirName, "-score", "reduced-scores.txt");
     }
 }
