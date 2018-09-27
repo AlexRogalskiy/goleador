@@ -1,8 +1,8 @@
 package ris58h.goleador.core;
 
 public class MainProcessor {
-    public static void process(String videoId, String dirName) throws Exception {
-        FramesProcessor.process(videoId, dirName, "-gray");
+    public static void process(String input, String dirName) throws Exception {
+        FramesProcessor.process(dirName, input, "-gray");
         PreOcrProcessor.process(dirName, "-gray", "-preocr");
         OcrProcessor.process(dirName, "-preocr", "-text");
         ScoresProcessor.process(dirName, "-text", "-score");

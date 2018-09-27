@@ -3,39 +3,15 @@ package ris58h.goleador.core;
 import static ris58h.goleador.core.Utils.readInputToString;
 
 public class FramesProcessor {
-    public static void process(String videoId, String dirName, String suffix) throws Exception {
-//        String format = "135"; // 480p
-        String format = "136"; // 720p
-        System.out.println("Fetching video URL for videoId=" + videoId + " and format=" + format);
-        String videoUrl = fetchVideoUrl(videoId, format);
-        System.out.println("Video URL for videoId=" + videoId + " and format=" + format + ": " + videoUrl);
-
-//        String width = "400";
-//        String height = "100";
-        String width = "500";
-        String height = "150";
-        String cropSize = width + ":" + height + ":0:0";
-        String command = "ffmpeg -i " + videoUrl +
-                " -filter_complex [0:v]crop=" + cropSize + "[crop];[crop]format=gray" +
+    public static void process(String dirName, String input, String suffix) throws Exception {
+        String command = "ffmpeg -i " + input +
+                " -filter_complex [0:v]crop=in_w/2:in_h/5:0:0[crop];[crop]format=gray" +
                 " -r 1 " + dirName + "/%04d" + suffix + ".png";
-        System.out.println("Downloading video frames");
-        long before = System.currentTimeMillis();
+        System.out.println("Extracting video frames");
         Process process = Runtime.getRuntime().exec(command);
         int exitCode = process.waitFor();
         if (exitCode > 0) {
             throw new RuntimeException(readInputToString(process.getErrorStream()));
-        } else {
-            long seconds = (System.currentTimeMillis() - before) / 1000;
-            System.out.println("Frames are downloaded in " + (seconds) + "s");
         }
-    }
-
-    private static String fetchVideoUrl(String videoId, String format) throws Exception {
-        Process process = Runtime.getRuntime().exec("youtube-dl -f " + format + " -g https://www.youtube.com/watch?v=" + videoId);
-        int exitCode = process.waitFor();
-        if (exitCode > 0) {
-            throw new RuntimeException(readInputToString(process.getErrorStream()));
-        }
-        return readInputToString(process.getInputStream());
     }
 }
