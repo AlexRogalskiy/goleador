@@ -42,4 +42,22 @@ class ScoreMatcherTest {
     void scoreAtTheEnd() {
         testFind("some text 2-0", 2, 0);
     }
+
+    @Nested
+    class Fuzzy {
+        @Test
+        void OInsteadOfZero() {
+            testFind("38:21 INT 0 O TOT", 0, 0);
+        }
+
+        @Test
+        void oInsteadOfZero() {
+            testFind("38:21 INT 0 o TOT", 0, 0);
+        }
+
+        @Test
+        void QInsteadOfZero() {
+            testFind("38:21 INT 0 Q TOT", 0, 0);
+        }
+    }
 }
