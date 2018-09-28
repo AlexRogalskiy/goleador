@@ -30,7 +30,7 @@ public class MainProcessorIT {
         test("D6hdF7gChmE", Arrays.asList(
                 "0-0:1:209",
                 "0-1:214:256",
-                "0-2:261:330",
+                "1-1:261:330",
                 "2-1:335:405",
                 "3-1:411:478"
         ));
