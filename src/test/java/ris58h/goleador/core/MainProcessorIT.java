@@ -65,6 +65,15 @@ public class MainProcessorIT {
     }
 
     @Test
+    void test_QYlSNDwrq40() throws Exception {
+        test("QYlSNDwrq40", Arrays.asList(
+                "0-0:1:23",
+                "1-0:28:102",
+                "1-1:107:242"
+        ));
+    }
+
+    @Test
     void test_ZdFEZlepWJI() throws Exception {
         test("ZdFEZlepWJI", Arrays.asList(
                 "0-0:1:145",
