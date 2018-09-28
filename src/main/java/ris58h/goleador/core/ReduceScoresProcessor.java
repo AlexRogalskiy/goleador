@@ -24,11 +24,13 @@ public class ReduceScoresProcessor {
                 try (InputStream is = new BufferedInputStream(new FileInputStream(path.toFile()))) {
                     scoreString = readInputToString(is);
                 }
-                Score score = Score.parseScore(scoreString);
-                String name = path.getName(path.getNameCount() - 1).toString();
-                String prefix = name.substring(0, name.length() - inPostfix.length());
-                int frameNumber = Integer.parseInt(prefix);
-                scores.put(frameNumber, score);
+                if (!scoreString.isEmpty()) {
+                    Score score = Score.parseScore(scoreString);
+                    String name = path.getName(path.getNameCount() - 1).toString();
+                    String prefix = name.substring(0, name.length() - inPostfix.length());
+                    int frameNumber = Integer.parseInt(prefix);
+                    scores.put(frameNumber, score);
+                }
             }
         }
         List<ScoreFrames> reducedScores = reduceScores(scores);

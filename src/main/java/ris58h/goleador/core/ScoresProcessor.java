@@ -23,13 +23,11 @@ public class ScoresProcessor {
                     text = readInputToString(is);
                 }
                 Score score = ScoreMatcher.find(text);
-                if (score != null) {
-                    String name = path.getName(path.getNameCount() - 1).toString();
-                    String prefix = name.substring(0, name.length() - inPostfix.length());
-                    Path outPath = path.resolveSibling(prefix + outSuffix + ".txt");
-                    String scoreString = score.left + "-" + score.right;
-                    Files.write(outPath, scoreString.getBytes(StandardCharsets.UTF_8));
-                }
+                String name = path.getName(path.getNameCount() - 1).toString();
+                String prefix = name.substring(0, name.length() - inPostfix.length());
+                Path outPath = path.resolveSibling(prefix + outSuffix + ".txt");
+                String scoreString = score == null ? "" : score.left + "-" + score.right;
+                Files.write(outPath, scoreString.getBytes(StandardCharsets.UTF_8));
             }
         }
     }
