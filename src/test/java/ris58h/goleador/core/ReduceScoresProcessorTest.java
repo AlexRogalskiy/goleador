@@ -31,7 +31,8 @@ class ReduceScoresProcessorTest {
                 null,
                 Score.of(1, 1),
                 Score.of(1, 1),
-                Score.of(1, 1)
+                Score.of(1, 1),
+                Score.of(2, 6)
         ));
         List<ScoreFrames> reducedScores = ReduceScoresProcessor.reduceScores(scores);
         List<ScoreFrames> expected = Arrays.asList(
