@@ -16,6 +16,15 @@ public class MainProcessorIT {
     Path testDirPath = Paths.get("test");
 
     @Test
+    void test_5VMS71fitI4() throws Exception {
+        test("5VMS71fitI4", Arrays.asList(
+                "0-0:47:151",
+                "0-1:152:256",
+                "1-1:257:375"
+        ));
+    }
+
+    @Test
     void test_cLjn6oF1E9Q() throws Exception {
         test("cLjn6oF1E9Q", Arrays.asList(
                 "0-0:1:29",
