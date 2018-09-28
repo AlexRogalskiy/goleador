@@ -65,7 +65,9 @@ public class ReduceScoresProcessor {
                     last = frame;
                 }
             }
-            result.add(new ScoreFrames(prevScore, first, last));
+            if (first != null && last != null) {
+                result.add(new ScoreFrames(prevScore, first, last));
+            }
         }
         return result;
     }
