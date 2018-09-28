@@ -15,6 +15,19 @@ public class MainProcessorIT {
 
     Path testDirPath = Paths.get("test");
 
+    //TODO
+    @Test
+    void test__qGLWEaa47k() throws Exception {
+        test("-qGLWEaa47k", Arrays.asList(
+                "0-0:34:79",
+                "1-0:80:115",
+                "1-1:116:331",
+                "2-1:332:370",
+                "2-2:371:442",
+                "2-3:443:506"
+        ));
+    }
+
     @Test
     void test_5VMS71fitI4() throws Exception {
         test("5VMS71fitI4", Arrays.asList(
@@ -55,6 +68,7 @@ public class MainProcessorIT {
         ));
     }
 
+    //TODO
     @Test
     void test_KyW4keXAT3s() throws Exception {
         test("KyW4keXAT3s", Arrays.asList(
