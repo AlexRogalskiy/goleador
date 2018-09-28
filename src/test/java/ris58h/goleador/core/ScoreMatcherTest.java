@@ -25,6 +25,11 @@ class ScoreMatcherTest {
     }
 
     @Test
+    void colonSeparator() {
+        testFind("Daa BANTUKA 0:0 NOKOMOTHB 23:40", 0, 0);
+    }
+
+    @Test
     void noisyInput() {
         testFind("#8 90:00 INT 2 1 TOT", 2, 1);
     }

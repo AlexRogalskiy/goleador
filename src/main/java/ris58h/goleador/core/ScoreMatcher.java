@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ScoreMatcher {
-    private static final String SEPARATOR_REGEX = "( ?[- ] ?)";
+    private static final String SEPARATOR_REGEX = "( ?[- :] ?)";
     private static final String PROBABLY_ZERO_REGEX = "[QOo]";
     private static final String SCORE_DIGIT_REGEX = "(\\d|" + PROBABLY_ZERO_REGEX + ")";
     private static final Pattern SCORE_PATTERN = Pattern.compile("(^|\\W)"
