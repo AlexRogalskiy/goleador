@@ -44,6 +44,11 @@ class ScoreMatcherTest {
         testFind("some text 2-0", 2, 0);
     }
 
+    @Test
+    void whitespacesAroundSeparator() {
+        testFind("84:51 om 3 - 0 EAGUINGAMP", 3, 0);
+    }
+
     @Nested
     class Fuzzy {
         @Test
