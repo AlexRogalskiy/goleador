@@ -59,6 +59,17 @@ public class MainProcessorIT {
     }
 
     @Test
+    void test_fM7TtiC_j_w() throws Exception {
+        test("fM7TtiC-j_w", Arrays.asList(
+                "0-0:1:29",
+                "1-0:34:87",
+                "1-1:92:151",
+                "2-1:156:236",
+                "3-1:241:282"
+        ));
+    }
+
+    @Test
     void test_gLQf3Zp2n6g() throws Exception {
         test("gLQf3Zp2n6g", Arrays.asList(
                 "0-0:1:19",
