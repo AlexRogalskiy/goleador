@@ -1,9 +1,13 @@
 package ris58h.goleador.core;
 
 
+import ij.plugin.filter.GaussianBlur;
+import ij.process.ImageProcessor;
+
 import java.nio.file.*;
 
-import static ris58h.goleador.core.Utils.readInputToString;
+import static ris58h.goleador.core.Utils.readImage;
+import static ris58h.goleador.core.Utils.writeImage;
 
 public class PreOcrProcessor {
     public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
@@ -40,13 +44,9 @@ public class PreOcrProcessor {
 //    }
 
     private static void blur(Path inPath, Path outPath) throws Exception {
-        String in = inPath.toAbsolutePath().toString();
-        String out = outPath.toAbsolutePath().toString();
-        String command = "convert " + in + " -blur 0x1 " + out;
-        Process process = Runtime.getRuntime().exec(command);
-        int exitCode = process.waitFor();
-        if (exitCode > 0) {
-            throw new RuntimeException(readInputToString(process.getErrorStream()));
-        }
+        ImageProcessor ip = readImage(inPath.toFile());
+        GaussianBlur gaussianBlur = new GaussianBlur();
+        gaussianBlur.blurGaussian(ip, 1);
+        writeImage(ip, outPath.toFile());
     }
 }
