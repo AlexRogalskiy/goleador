@@ -1,16 +1,29 @@
 package ris58h.goleador.core;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Highlighter {
     public static List<Integer> times(List<ScoreFrames> reducedScores) {
-        return reducedScores.stream()
-                .skip(1)
-                .map(scoreFrames -> scoreFrames.first - 1) // The first frame is a thumbnail.
-                .map(frame -> frame - 1) //TODO: Is the second one a thumbnail too?!
-                .map(frame -> Integer.max(0, frame - 15)) // We interested in time that is seconds before score changed.
-//                .map(Utils::timestamp)
-                .collect(Collectors.toList());
+        return times(reducedScores, 11);
+    }
+
+    static List<Integer> times(List<ScoreFrames> reducedScores, int back) {
+        List<Integer> result = new ArrayList<>();
+        ScoreFrames prev = null;
+        for (ScoreFrames cur : reducedScores) {
+            // Skip first one because it should be 0-0.
+            if (prev != null) {
+//                int highTime = cur.first - back; // min measure: 10275 for back=22
+                int highTime = prev.last - back; // min measure: 264 for back=11
+
+                // Time mustn't be negative.
+                // The first frame is a thumbnail.
+                // Video starts with 0 but frames with 1.
+                result.add(Integer.max(0, highTime - 1 - 1));
+            }
+            prev = cur;
+        }
+        return result;
     }
 }
