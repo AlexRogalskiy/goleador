@@ -1,5 +1,7 @@
 package ris58h.goleador.processor;
 
+import java.util.concurrent.TimeUnit;
+
 import static ris58h.goleador.processor.Utils.readInputToString;
 
 public class FramesProcessor {
@@ -9,7 +11,10 @@ public class FramesProcessor {
                 " -r 1 " + dirName + "/%04d" + suffix + ".png";
         System.out.println("Extracting video frames");
         Process process = Runtime.getRuntime().exec(command);
-        int exitCode = process.waitFor();
+        if (!process.waitFor(15, TimeUnit.MINUTES)) {
+            throw new RuntimeException("Process timeout");
+        }
+        int exitCode = process.exitValue();
         if (exitCode > 0) {
             throw new RuntimeException(readInputToString(process.getErrorStream()));
         }
