@@ -16,22 +16,4 @@ public class MainProcessor {
                 .map(ScoreFrames::parseScoreRange)
                 .collect(Collectors.toList());
     }
-
-    public static void main(String[] args) throws Exception {
-        String input = args[0];
-        String output = args[1];
-        Path tempDirectory = Files.createTempDirectory("ygp-");
-        try {
-            String dirName = tempDirectory.toAbsolutePath().toString();
-            System.out.println("Working dir: " + dirName);
-            List<ScoreFrames> scoreFrames = process(input, dirName);
-            List<Integer> times = Highlighter.times(scoreFrames);
-            List<String> lines = times.stream()
-                    .map(Object::toString)
-                    .collect(Collectors.toList());
-            Files.write(Paths.get(output), lines);
-        } finally {
-            Utils.deleteDirectory(tempDirectory);
-        }
-    }
 }
