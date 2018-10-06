@@ -98,6 +98,20 @@ public class MainProcessorIT {
         ));
     }
 
+    //TODO: Actual   :<1-2:104:111>
+    @Test
+    void test_yE33DcpNZkw() throws Exception {
+        test("yE33DcpNZkw", Arrays.asList(
+                "0-0:7:16",
+                "0-1:17:60",
+                "1-1:61:82",
+                "1-2:104:112",
+                "2-2:113:138",
+                "3-2:139:181",
+                "3-3:182:186"
+        ));
+    }
+
     @Test
     void test_ZdFEZlepWJI() throws Exception {
         test("ZdFEZlepWJI", Arrays.asList(
