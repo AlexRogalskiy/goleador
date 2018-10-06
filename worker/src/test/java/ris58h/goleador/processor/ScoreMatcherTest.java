@@ -54,6 +54,16 @@ class ScoreMatcherTest {
         testFind("84:51 om 3 - 0 EAGUINGAMP", 3, 0);
     }
 
+    @Test
+    void brokenTime() {
+        testFind("02: BAYERN 0-0 LEVERKUSEN", 0, 0);
+    }
+
+    @Test
+    void noSeparator() {
+        testFind("12:25 SPM’ OO VIL", 0, 0);
+    }
+
     @Nested
     class Fuzzy {
         @Test
