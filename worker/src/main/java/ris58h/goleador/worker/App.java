@@ -4,26 +4,30 @@ import ris58h.goleador.processor.Highlighter;
 import ris58h.goleador.processor.MainProcessor;
 import ris58h.goleador.processor.ScoreFrames;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
 import java.util.List;
+import java.util.Properties;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class App {
 
     public static final String FORMAT = "136";
+    public static final int DEFAULT_DELAY = 30_000;
 
     public static void main(String[] args) {
-        //TODO
-        long delay = 30_000;
-        String jdbcUrl = "jdbc:postgresql://localhost:5432/goleador";
-        String username = "goleador";
-        String password = "dev";
-
-        Supplier<Connection> connectionSupplier = connectionSupplier(jdbcUrl, username, password);
+        Function<String, String> appProperties = appProperties(args.length == 1 ? args[0] : null);
+        String delayString = appProperties.apply("delay");
+        long delay = delayString == null ? DEFAULT_DELAY : Long.parseLong(delayString);
+        Supplier<Connection> connectionSupplier = connectionSupplier(
+                appProperties.apply("datasource.url"),
+                appProperties.apply("datasource.username"),
+                appProperties.apply("datasource.password"));
         while (true) {
             long timeBefore = System.currentTimeMillis();
 
@@ -74,6 +78,24 @@ public class App {
                 }
             }
         }
+    }
+
+    private static Function<String, String> appProperties(String propertiesPath) {
+        Properties properties = new Properties();
+        if (propertiesPath != null) {
+            try {
+                properties.load(new FileInputStream(propertiesPath));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return key -> {
+            String property = properties.getProperty(key);
+            if (property == null) {
+                property = System.getProperty(key);
+            }
+            return property;
+        };
     }
 
     private static List<Integer> process(String videoId, Path tempDirectory) throws Exception {
