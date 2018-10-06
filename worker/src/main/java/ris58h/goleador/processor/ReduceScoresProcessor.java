@@ -58,7 +58,9 @@ public class ReduceScoresProcessor {
                 boolean rightChanged = score.right == prevScore.right + 1;
                 if ((leftSame || leftChanged) && (rightSame || rightChanged)) {
                     if ((leftChanged && rightSame) || (leftSame && rightChanged)) {
-                        result.add(new ScoreFrames(prevScore, first, last));
+                        if (last != null) {
+                            result.add(new ScoreFrames(prevScore, first, last));
+                        }
                         first = frame;
                     }
                     prevScore = score;
