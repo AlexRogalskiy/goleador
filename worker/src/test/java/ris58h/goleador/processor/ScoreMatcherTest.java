@@ -30,6 +30,11 @@ class ScoreMatcherTest {
     }
 
     @Test
+    void equalSignSeparator() {
+        testFind("~ \\ 56:07 OM 0 = 0 EAGUINGAMP", 0, 0);
+    }
+
+    @Test
     void noisyInput() {
         testFind("#8 90:00 INT 2 1 TOT", 2, 1);
     }

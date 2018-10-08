@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class ScoreMatcher {
     private static final String TIME_REGEX = "\\d?\\d:\\d\\d";
 
-    private static final String SEPARATOR_REGEX = "( ?[- :] ?)";
+    private static final String SEPARATOR_REGEX = "( ?[- :=] ?)";
     private static final String PROBABLY_ZERO_REGEX = "[QOo]";
     private static final String SCORE_DIGIT_REGEX = "(\\d|" + PROBABLY_ZERO_REGEX + ")";
     private static final String LEFT_REGEX = "(^|\\W)(?<left>" + SCORE_DIGIT_REGEX + ")";
