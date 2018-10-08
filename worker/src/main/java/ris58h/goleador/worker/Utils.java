@@ -6,7 +6,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class Utils {
     public static void deleteDirectory(Path path) throws IOException {
-        FileVisitor visitor = new SimpleFileVisitor<Path>() {
+        FileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 Files.delete(file);
