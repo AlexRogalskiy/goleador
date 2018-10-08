@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -18,16 +19,15 @@ import java.util.stream.Collectors;
 public class App {
 
     public static final String FORMAT = "136";
-    public static final int DEFAULT_DELAY = 30_000;
+    public static final long DEFAULT_DELAY = 30_000;
 
     public static void main(String[] args) {
-        Function<String, String> appProperties = appProperties(args.length == 1 ? args[0] : null);
-        String delayString = appProperties.apply("delay");
-        long delay = delayString == null ? DEFAULT_DELAY : Long.parseLong(delayString);
+        Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
+        long delay = appProperties.apply("worker.delay").map(Long::parseLong).orElse(DEFAULT_DELAY);
         Supplier<Connection> connectionSupplier = connectionSupplier(
-                appProperties.apply("datasource.url"),
-                appProperties.apply("datasource.username"),
-                appProperties.apply("datasource.password"));
+                appProperties.apply("datasource.url").get(),
+                appProperties.apply("datasource.username").get(),
+                appProperties.apply("datasource.password").get());
         while (true) {
             long timeBefore = System.currentTimeMillis();
 
@@ -45,15 +45,15 @@ public class App {
                     List<Integer> times = process(videoId, tempDirectory);
                     updateVideoTimes(videoId, times, connectionSupplier);
                 } catch (Exception e) {
-                    logError("Error while processing video " + videoId + ": " + e.getMessage(), e);
+                    logError("Processing error: " + videoId + ": " + e.getMessage(), e);
                     try {
-                        String workerError = e.getMessage();
-                        if (workerError == null) {
-                            workerError = e.getClass().getName();
+                        String error = e.getMessage();
+                        if (error == null) {
+                            error = e.getClass().getName();
                         }
-                        updateVideoWorkerError(videoId, workerError, connectionSupplier);
+                        updateError(videoId, error, connectionSupplier);
                     } catch (Exception ee) {
-                        logError("Error while updating video processing error: " + ee.getMessage(), e);
+                        logError("Updating error: " + ee.getMessage(), e);
                     }
                 }
                 if (tempDirectory != null) {
@@ -80,7 +80,7 @@ public class App {
         }
     }
 
-    private static Function<String, String> appProperties(String propertiesPath) {
+    private static Function<String, Optional<String>> appProperties(String propertiesPath) {
         Properties properties = new Properties();
         if (propertiesPath != null) {
             try {
@@ -94,7 +94,7 @@ public class App {
             if (property == null) {
                 property = System.getProperty(key);
             }
-            return property;
+            return Optional.ofNullable(property);
         };
     }
 
@@ -157,20 +157,20 @@ public class App {
         }
     }
 
-    private static void updateVideoWorkerError(String videoId,
-                                               String workerError,
-                                               Supplier<Connection> connectionSupplier) throws Exception {
-        if (workerError.length() > 255) {
-            workerError = workerError.substring(0, 255);
+    private static void updateError(String videoId,
+                                        String error,
+                                        Supplier<Connection> connectionSupplier) throws Exception {
+        if (error.length() > 255) {
+            error = error.substring(0, 255);
         }
         try (
                 Connection connection = connectionSupplier.get();
                 PreparedStatement ps = connection.prepareStatement(" UPDATE video " +
-                        " SET worker_error = ? " +
+                        " SET error = ? " +
                         " WHERE video_id = ? "
                 );
         ) {
-            ps.setString(1, workerError);
+            ps.setString(1, error);
             ps.setString(2, videoId);
             ps.executeUpdate();
         }

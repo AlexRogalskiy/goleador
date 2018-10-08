@@ -1,4 +1,4 @@
-package ris58h.goleador.processor;
+package ris58h.goleador.commenter;
 
 import org.junit.jupiter.api.Test;
 
