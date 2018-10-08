@@ -3,6 +3,7 @@ package ris58h.goleador.processor;
 import ij.plugin.filter.Binary;
 import ij.process.BinaryProcessor;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -25,6 +26,7 @@ public class ClearProcessor {
     private static final int COLOR_BLACK = 0;
     private static final int COLOR_WHITE = 255;
     private static final int MORPH_COUNT = 7;
+    private static final int STATIC_GRAY_BACKGROUND = 111666777;
 
     public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
         Path dirPath = Paths.get(dirName);
@@ -95,7 +97,7 @@ public class ClearProcessor {
         }
 
         System.out.println("Thresholding intensity matrix");
-        ByteProcessor staticGray = new ByteProcessor(width, height);
+        ColorProcessor staticGray = new ColorProcessor(width, height);
         BinaryProcessor staticBlack = new BinaryProcessor(new ByteProcessor(width, height));
         BinaryProcessor staticWhite = new BinaryProcessor(new ByteProcessor(width, height));
         int intensityThreshold = getIntensityThreshold(intensityMatrix);
@@ -106,12 +108,14 @@ public class ClearProcessor {
                 if (intensity > intensityThreshold) {
                     int sumColor = colorMatrix.buffer[index];
                     int color = sumColor / intensity;
-                    staticGray.set(x, y, color);
+                    staticGray.set(x, y, (color<<16)+(color<<8)+color);
                     if (color > 127) {
                         staticWhite.set(x, y, COLOR_WHITE);
                     } else {
                         staticBlack.set(x, y, COLOR_WHITE);
                     }
+                } else {
+                    staticGray.set(x, y, STATIC_GRAY_BACKGROUND);
                 }
             }
         }
