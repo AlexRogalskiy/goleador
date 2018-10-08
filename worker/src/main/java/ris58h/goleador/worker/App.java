@@ -29,8 +29,6 @@ public class App {
                 appProperties.apply("datasource.username").get(),
                 appProperties.apply("datasource.password").get());
         while (true) {
-            long timeBefore = System.currentTimeMillis();
-
             String videoId = null;
             try {
                 videoId = fetchUnprocessedVideoId(connectionSupplier);
@@ -42,8 +40,12 @@ public class App {
                 Path tempDirectory = null;
                 try {
                     tempDirectory = Files.createTempDirectory("goleador-");
+                    long timeBefore = System.currentTimeMillis();
                     List<Integer> times = process(videoId, tempDirectory);
+                    long elapsedTime = System.currentTimeMillis() - timeBefore;
+                    log("Video " + videoId + " has been processed in " + (elapsedTime / 1000) + " seconds");
                     updateVideoTimes(videoId, times, connectionSupplier);
+                    log("Video times have been updated");
                 } catch (Exception e) {
                     logError("Processing error: " + videoId + ": " + e.getMessage(), e);
                     try {
@@ -65,14 +67,9 @@ public class App {
                 }
             }
 
-            long elapsedTime = System.currentTimeMillis() - timeBefore;
-            if (videoId != null) {
-                log("Elapsed processing time for video " + videoId + ": " + (elapsedTime / 1000));
-            }
-            long waitTime = delay - elapsedTime;
-            if (waitTime > 0) {
+            if (delay > 0) {
                 try {
-                    Thread.sleep(waitTime);
+                    Thread.sleep(delay);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
