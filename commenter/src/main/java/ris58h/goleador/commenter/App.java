@@ -1,14 +1,5 @@
 package ris58h.goleador.commenter;
 
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Comment;
-import com.google.api.services.youtube.model.CommentSnippet;
-import com.google.api.services.youtube.model.CommentThread;
-import com.google.api.services.youtube.model.CommentThreadSnippet;
 import org.postgresql.Driver;
 
 import java.io.FileInputStream;
@@ -36,7 +27,7 @@ public class App {
                 appProperties.apply("datasource.url").get(),
                 appProperties.apply("datasource.username").get(),
                 appProperties.apply("datasource.password").get());
-        YouTube youTube = youTube(
+        YouTubeCommenter youTubeCommenter = new YouTubeCommenter(
                 appProperties.apply("google.app.clientId").get(),
                 appProperties.apply("google.app.clientSecret").get(),
                 appProperties.apply("google.app.refreshToken").get()
@@ -48,7 +39,7 @@ public class App {
                     log("Process uncommented video " + videoId);
                     try {
                         String commentText = commentText(videoTimes.times);
-                        String commentId = comment(videoId, commentText, youTube);
+                        String commentId = youTubeCommenter.comment(videoId, commentText);
                         updateCommentId(videoId, commentId, connectionSupplier);
                         log("Video " + videoId + " has been commented: commentId=" + commentId);
                     } catch (Exception e) {
@@ -127,30 +118,6 @@ public class App {
             this.videoId = videoId;
             this.times = times;
         }
-    }
-
-    private static YouTube youTube(String clientId, String clientSecret, String refreshToken) {
-        NetHttpTransport transport = new NetHttpTransport();
-        JacksonFactory jsonFactory = new JacksonFactory();
-        Credential credential = new GoogleCredential.Builder().setTransport(transport)
-                .setJsonFactory(jsonFactory)
-                .setClientSecrets(clientId, clientSecret)
-                .build()
-                .setRefreshToken(refreshToken);
-        return new YouTube.Builder(transport, jsonFactory, credential).build();
-    }
-
-    private static String comment(String videoId, String commentText, YouTube youtube) throws Exception {
-        CommentThread commentThread = new CommentThread();
-        commentThread.setSnippet(new CommentThreadSnippet()
-                .setVideoId(videoId)
-                .setTopLevelComment(new Comment()
-                        .setSnippet(new CommentSnippet()
-                                .setTextOriginal(commentText))));
-        CommentThread videoCommentInsertResponse = youtube.commentThreads()
-                .insert("snippet", commentThread).execute();
-        return videoCommentInsertResponse.getSnippet().getTopLevelComment()
-                .getId();
     }
 
     private static Function<String, Optional<String>> appProperties(String propertiesPath) {
