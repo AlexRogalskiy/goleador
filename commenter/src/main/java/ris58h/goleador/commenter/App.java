@@ -9,6 +9,7 @@ import com.google.api.services.youtube.model.Comment;
 import com.google.api.services.youtube.model.CommentSnippet;
 import com.google.api.services.youtube.model.CommentThread;
 import com.google.api.services.youtube.model.CommentThreadSnippet;
+import org.postgresql.Driver;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -27,6 +28,8 @@ public class App {
     public static final long DEFAULT_DELAY = 30_000;
 
     public static void main(String[] args) {
+        init();
+
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
         long delay = appProperties.apply("commenter.delay").map(Long::parseLong).orElse(DEFAULT_DELAY);
         Supplier<Connection> connectionSupplier = connectionSupplier(
@@ -72,6 +75,17 @@ public class App {
                     throw new RuntimeException(e);
                 }
             }
+        }
+    }
+
+    private static void init() {
+        // Explicitly init Postgres driver to make psql jar be included in minimized app jar.
+        try {
+            if (!Driver.isRegistered()) {
+                Driver.register();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
