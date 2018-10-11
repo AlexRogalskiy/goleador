@@ -21,12 +21,20 @@ import static ris58h.goleador.processor.Utils.readImage;
 import static ris58h.goleador.processor.Utils.writeImage;
 
 public class StaticProcessor implements Processor {
-    private static final int BATCH_SIZE = 5;
-    private static final int BATCH_COLOR_DELTA = 2;
     private static final int COLOR_BLACK = 0;
     private static final int COLOR_WHITE = 255;
-    private static final int MORPH_COUNT = 7;
     private static final int STATIC_GRAY_BACKGROUND = 111666777;
+
+    private int batchSize = 5;
+    private int batchColorDelta = 2;
+    private int morphNum = 7;
+
+    @Override
+    public void init(Parameters parameters) throws Exception {
+        parameters.apply("batchSize").ifPresent(value -> batchSize = Integer.parseInt(value));
+        parameters.apply("batchColorDelta").ifPresent(value -> batchColorDelta = Integer.parseInt(value));
+        parameters.apply("morphNum").ifPresent(value -> morphNum = Integer.parseInt(value));
+    }
 
     @Override
     public void process(String inName, String outName, String workingDir) throws Exception {
@@ -34,8 +42,8 @@ public class StaticProcessor implements Processor {
         String inGlob = FrameUtils.glob(inName, "png");
         IntMatrix intensityMatrix = null;
         IntMatrix colorMatrix = null;
-        ArrayDeque<ImageProcessor> batch = new ArrayDeque<>(BATCH_SIZE);
-        int[] batchColors = new int[BATCH_SIZE];
+        ArrayDeque<ImageProcessor> batch = new ArrayDeque<>(batchSize);
+        int[] batchColors = new int[batchSize];
         int width = -1;
         int height = -1;
         System.out.println("Building intensity matrix");
@@ -60,7 +68,7 @@ public class StaticProcessor implements Processor {
                     }
                 }
                 batch.add(ip);
-                if (batch.size() == BATCH_SIZE) {
+                if (batch.size() == batchSize) {
                     for (int y = 0; y < height; y++) {
                         for (int x = 0; x < width; x++) {
                             int index = y * width + x;
@@ -72,11 +80,11 @@ public class StaticProcessor implements Processor {
                                 sum += batchItemColor;
                                 i++;
                             }
-                            int avgColor = sum / BATCH_SIZE;
+                            int avgColor = sum / batchSize;
                             boolean sameColor = true;
                             for (int batchColor : batchColors) {
                                 int absDelta = Math.abs(avgColor - batchColor);
-                                if (absDelta > BATCH_COLOR_DELTA) {
+                                if (absDelta > batchColorDelta) {
                                     sameColor = false;
                                     break;
                                 }
@@ -128,11 +136,11 @@ public class StaticProcessor implements Processor {
         fillHoles(staticWhite);
         writeImage(staticBlack, dirPath.resolve("filled-black.png").toFile());
         writeImage(staticWhite, dirPath.resolve("filled-white.png").toFile());
-        for (int i = 0; i < MORPH_COUNT; i++) {
+        for (int i = 0; i < morphNum; i++) {
             staticBlack.dilate();
             staticWhite.dilate();
         }
-        for (int i = 0; i < MORPH_COUNT; i++) {
+        for (int i = 0; i < morphNum; i++) {
             staticBlack.erode();
             staticWhite.erode();
         }
