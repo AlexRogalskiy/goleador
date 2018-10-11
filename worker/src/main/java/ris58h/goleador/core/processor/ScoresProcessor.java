@@ -25,6 +25,7 @@ public class ScoresProcessor implements Processor {
                 try (InputStream is = new BufferedInputStream(new FileInputStream(path.toFile()))) {
                     text = readInputToString(is);
                 }
+                text = text.replaceAll("\\s+", " ");
                 Score score = ScoreMatcher.find(text);
                 String scoreString = score == null ? "" : score.toString();
                 Path outPath = FrameUtils.resolveSiblingPath(path, outName, "txt");

@@ -2,8 +2,6 @@ package ris58h.goleador.core;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import ris58h.goleador.core.Score;
-import ris58h.goleador.core.ScoreMatcher;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,6 +12,10 @@ class ScoreMatcherTest {
         assertNotNull(score);
         assertEquals(expectedScoreLeft, score.left);
         assertEquals(expectedScoreRight, score.right);
+    }
+
+    private void testNotFind(String text) {
+        assertNull(ScoreMatcher.find(text));
     }
 
     @Test
@@ -68,7 +70,8 @@ class ScoreMatcherTest {
 
     @Test
     void noSeparator() {
-        testFind("12:25 SPM’ OO VIL", 0, 0);
+        testNotFind("12:25 SPM’ OO VIL");
+        testNotFind("\"20\" ‘0 EE");
     }
 
     @Nested
