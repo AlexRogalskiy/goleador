@@ -1,8 +1,8 @@
 package ris58h.goleador.worker;
 
-import ris58h.goleador.processor.Highlighter;
-import ris58h.goleador.processor.MainProcessor;
-import ris58h.goleador.processor.ScoreFrames;
+import ris58h.goleador.core.Highlighter;
+import ris58h.goleador.core.MainProcessor;
+import ris58h.goleador.core.ScoreFrames;
 
 import java.io.FileInputStream;
 import java.io.IOException;

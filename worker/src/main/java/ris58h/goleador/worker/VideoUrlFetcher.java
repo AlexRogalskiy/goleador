@@ -1,6 +1,6 @@
 package ris58h.goleador.worker;
 
-import ris58h.goleador.processor.Utils;
+import ris58h.goleador.core.IOUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -19,7 +19,7 @@ public class VideoUrlFetcher {
         try {
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
-            response = Utils.readInputToString(con.getInputStream());
+            response = IOUtils.readInputToString(con.getInputStream());
         } finally {
             if (con != null) {
                 con.disconnect();
