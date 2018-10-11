@@ -7,8 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 
-public class VideoUrlFetcher {
-
+public class SimpleVideoUrlFetcher {
     private static final String FORMATS_KEY = "adaptive_fmts";
 
     public static String fetchFor(String videoId, String format) throws Exception {

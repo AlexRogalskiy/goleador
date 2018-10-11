@@ -104,7 +104,7 @@ public class App {
     private static List<Integer> process(String videoId,
                                          Path tempDirectory,
                                          MainProcessor mainProcessor) throws Exception {
-        String videoUrl = VideoUrlFetcher.fetchFor(videoId, FORMAT);
+        String videoUrl = YoutubeDLVideoUrlFetcher.fetchFor(videoId, FORMAT);
         if (videoUrl == null) {
             throw new RuntimeException("No URL found for video " + videoId);
         }
