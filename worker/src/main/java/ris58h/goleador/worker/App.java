@@ -105,6 +105,10 @@ public class App {
                                          Path tempDirectory,
                                          MainProcessor mainProcessor) throws Exception {
         String videoUrl = VideoUrlFetcher.fetchFor(videoId, FORMAT);
+        if (videoUrl == null) {
+            throw new RuntimeException("No URL found for video " + videoId);
+        }
+        log("URL for " + videoId + " video: " + videoUrl);
         String dirName = tempDirectory.toAbsolutePath().toString();
         List<ScoreFrames> scoreFrames = mainProcessor.process(videoUrl, dirName);
         return Highlighter.times(scoreFrames);
