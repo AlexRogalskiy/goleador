@@ -53,7 +53,7 @@ public class App {
                     updateVideoTimes(videoId, times, connectionSupplier);
                     log("Video times have been updated");
                 } catch (Exception e) {
-                    logError("Processing error: " + videoId + ": " + e.getMessage(), e);
+                    logError("Processing error for " + videoId + " video: " + e.getMessage(), e);
                     try {
                         String error = e.getMessage();
                         if (error == null) {
