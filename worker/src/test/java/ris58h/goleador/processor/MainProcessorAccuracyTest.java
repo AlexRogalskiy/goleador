@@ -25,7 +25,7 @@ public class MainProcessorAccuracyTest {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        });
+        }, true);
     }
 
     private static double measure(MainProcessor mainProcessor) {
