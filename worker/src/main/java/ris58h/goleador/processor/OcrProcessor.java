@@ -10,6 +10,12 @@ import java.util.concurrent.TimeUnit;
 import static ris58h.goleador.processor.Utils.readInputToString;
 
 public class OcrProcessor implements Processor {
+    private int psm = -1;
+
+    @Override
+    public void init(Parameters parameters) throws Exception {
+        parameters.apply("psm").ifPresent(value -> psm = Integer.parseInt(value));
+    }
 
     @Override
     public void process(String inName, String outName, String workingDir) throws Exception {
@@ -28,7 +34,10 @@ public class OcrProcessor implements Processor {
 
     private void ocr(String in, String out) throws IOException, InterruptedException {
         String tessOut = out.substring(0, out.length() - 4); // tesseract adds '.txt' automatically
-        String command = "tesseract " + in + " " + tessOut; // + " --psm 11";
+        String command = "tesseract " + in + " " + tessOut;
+        if (psm >= 0) {
+            command += " --psm " + psm;
+        }
         Process process = Runtime.getRuntime().exec(command);
         if (!process.waitFor(1, TimeUnit.MINUTES)) {
             throw new RuntimeException("Process timeout");
