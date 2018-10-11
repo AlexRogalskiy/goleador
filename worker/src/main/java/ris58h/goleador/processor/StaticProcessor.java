@@ -20,7 +20,7 @@ import java.util.List;
 import static ris58h.goleador.processor.Utils.readImage;
 import static ris58h.goleador.processor.Utils.writeImage;
 
-public class ClearProcessor implements Processor {
+public class StaticProcessor implements Processor {
     private static final int BATCH_SIZE = 5;
     private static final int BATCH_COLOR_DELTA = 2;
     private static final int COLOR_BLACK = 0;
@@ -139,7 +139,7 @@ public class ClearProcessor implements Processor {
         writeImage(staticBlack, dirPath.resolve("mask-black.png").toFile());
         writeImage(staticWhite, dirPath.resolve("mask-white.png").toFile());
 
-        System.out.println("Clearing images");
+        System.out.println("Applying masks");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             for (Path path : stream) {
                 ImageProcessor image = readImage(path.toFile());

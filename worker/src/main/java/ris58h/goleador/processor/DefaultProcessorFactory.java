@@ -8,7 +8,7 @@ public class DefaultProcessorFactory {
     private static final Map<String, Supplier<Processor>> SUPPLIERS = new HashMap<>();
     static {
         SUPPLIERS.put("frame", FramesProcessor::new);
-        SUPPLIERS.put("clear", ClearProcessor::new);
+        SUPPLIERS.put("static", StaticProcessor::new);
         SUPPLIERS.put("preocr", PreOcrProcessor::new);
         SUPPLIERS.put("ocr", OcrProcessor::new);
         SUPPLIERS.put("scores", ScoresProcessor::new);

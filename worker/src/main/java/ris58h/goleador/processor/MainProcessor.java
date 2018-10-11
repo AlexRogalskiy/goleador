@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 public class MainProcessor {
     private final Pipeline pipeline = Pipeline.create(String.join(",", Arrays.asList(
             "frame",
-            "clear",
+            "static",
             "preocr",
             "ocr",
             "scores",
