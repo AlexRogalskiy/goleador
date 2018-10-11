@@ -10,7 +10,7 @@ public class HighlighterPrintTimes {
             String videoId = entry.getKey();
             HighlighterTestData.ScoresAndTimes value = entry.getValue();
             List<ScoreFrames> reducedScores = value.reducedScoreLines.stream()
-                    .map(ScoreFrames::parseScoreRange)
+                    .map(ScoreFrames::parse)
                     .collect(Collectors.toList());
             List<Integer> times = Highlighter.times(reducedScores);
             System.out.println(videoId);

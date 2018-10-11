@@ -13,7 +13,7 @@ public class MainProcessor {
         ScoresProcessor.process(dirName, "-text", "-score");
         ReduceScoresProcessor.process(dirName, "-score", "reduced-scores.txt");
         return Files.lines(Paths.get(dirName).resolve("reduced-scores.txt"))
-                .map(ScoreFrames::parseScoreRange)
+                .map(ScoreFrames::parse)
                 .collect(Collectors.toList());
     }
 }

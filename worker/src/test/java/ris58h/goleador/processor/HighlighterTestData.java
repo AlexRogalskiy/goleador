@@ -1,12 +1,9 @@
 package ris58h.goleador.processor;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class HighlighterTestData {
-    static final Map<String, ScoresAndTimes> DATA_BY_VIDEO = new HashMap<>();
+class HighlighterTestData {
+    static final Map<String, ScoresAndTimes> DATA_BY_VIDEO = new TreeMap<>();
 
     static {
         addTestData("-qGLWEaa47k",
@@ -104,7 +101,7 @@ public class HighlighterTestData {
         ));
     }
 
-    static void addTestData(String videoId, List<String> reducedScoreLines, List<ExpectedTime> expectedTimes) {
+    private static void addTestData(String videoId, List<String> reducedScoreLines, List<ExpectedTime> expectedTimes) {
         DATA_BY_VIDEO.put(videoId, new ScoresAndTimes(reducedScoreLines, expectedTimes));
     }
 
@@ -112,7 +109,7 @@ public class HighlighterTestData {
         final List<String> reducedScoreLines;
         final List<ExpectedTime> expectedTimes;
 
-        public ScoresAndTimes(List<String> reducedScoreLines, List<ExpectedTime> expectedTimes) {
+        ScoresAndTimes(List<String> reducedScoreLines, List<ExpectedTime> expectedTimes) {
             this.reducedScoreLines = reducedScoreLines;
             this.expectedTimes = expectedTimes;
         }
@@ -123,13 +120,13 @@ public class HighlighterTestData {
         final int preferred;
         final int latest;
 
-        public ExpectedTime(int earliest, int preferred, int latest) {
+        ExpectedTime(int earliest, int preferred, int latest) {
             this.earliest = earliest;
             this.preferred = preferred;
             this.latest = latest;
         }
 
-        public ExpectedTime(int earliest, int latest) {
+        ExpectedTime(int earliest, int latest) {
             this(earliest, -1, latest);
         }
     }

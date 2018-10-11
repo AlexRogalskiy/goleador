@@ -33,7 +33,7 @@ public class ScoreFrames {
         return Objects.hash(score, first, last);
     }
 
-    public static ScoreFrames parseScoreRange(String s) {
+    public static ScoreFrames parse(String s) {
         String[] split = s.split(":");
         Score score = Score.parseScore(split[0]);
         int first = Integer.parseInt(split[1]);
