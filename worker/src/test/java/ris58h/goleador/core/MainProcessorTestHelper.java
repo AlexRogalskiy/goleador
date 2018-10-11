@@ -1,7 +1,5 @@
 package ris58h.goleador.core;
 
-import ris58h.goleador.core.processor.Parameters;
-
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,11 +26,11 @@ public class MainProcessorTestHelper {
         return mainProcessor.process(input, workingDir);
     }
 
-    // Just a way to process a particular video.
+    // Just the way to process a particular video.
     public static void main(String[] args) throws Exception {
         String videoId = "_Sd119oRamE";
         MainProcessor mainProcessor = new MainProcessor();
-        mainProcessor.init(Parameters.empty());
+        mainProcessor.init();
         List<ScoreFrames> reducedScores = MainProcessorTestHelper.process(videoId, mainProcessor);
         reducedScores.forEach(System.out::println);
         mainProcessor.dispose();
