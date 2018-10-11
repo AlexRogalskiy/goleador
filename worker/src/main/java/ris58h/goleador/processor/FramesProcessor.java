@@ -4,11 +4,13 @@ import java.util.concurrent.TimeUnit;
 
 import static ris58h.goleador.processor.Utils.readInputToString;
 
-public class FramesProcessor {
-    public static void process(String dirName, String input, String suffix) throws Exception {
-        String command = "ffmpeg -i " + input +
+public class FramesProcessor implements Processor {
+
+    @Override
+    public void process(String inName, String outName, String workingDir) throws Exception {
+        String command = "ffmpeg -i " + inName +
                 " -filter_complex [0:v]crop=in_w/2:in_h/5:0:0[crop];[crop]format=gray" +
-                " -r 1 " + dirName + "/%04d" + suffix + ".png";
+                " -r 1 " + workingDir + "/%04d-" + outName + ".png";
         System.out.println("Extracting video frames");
         Process process = Runtime.getRuntime().exec(command);
         if (!process.waitFor(15, TimeUnit.MINUTES)) {

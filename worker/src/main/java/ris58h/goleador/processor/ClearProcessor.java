@@ -20,7 +20,7 @@ import java.util.List;
 import static ris58h.goleador.processor.Utils.readImage;
 import static ris58h.goleador.processor.Utils.writeImage;
 
-public class ClearProcessor {
+public class ClearProcessor implements Processor {
     private static final int BATCH_SIZE = 5;
     private static final int BATCH_COLOR_DELTA = 2;
     private static final int COLOR_BLACK = 0;
@@ -28,10 +28,10 @@ public class ClearProcessor {
     private static final int MORPH_COUNT = 7;
     private static final int STATIC_GRAY_BACKGROUND = 111666777;
 
-    public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
-        Path dirPath = Paths.get(dirName);
-        String inPostfix = inSuffix + ".png";
-        String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
+    @Override
+    public void process(String inName, String outName, String workingDir) throws Exception {
+        Path dirPath = Paths.get(workingDir);
+        String inGlob = FrameUtils.glob(inName, "png");
         IntMatrix intensityMatrix = null;
         IntMatrix colorMatrix = null;
         ArrayDeque<ImageProcessor> batch = new ArrayDeque<>(BATCH_SIZE);
@@ -157,9 +157,7 @@ public class ClearProcessor {
                         image.set(x, y, masked ? COLOR_BLACK : COLOR_WHITE);
                     }
                 }
-                String name = path.getName(path.getNameCount() - 1).toString();
-                String prefix = name.substring(0, name.length() - inPostfix.length());
-                Path outPath = path.resolveSibling(prefix + outSuffix + ".png");
+                Path outPath = FrameUtils.resolveSiblingPath(path, outName, "png");
                 writeImage(image, outPath.toFile());
             }
         }

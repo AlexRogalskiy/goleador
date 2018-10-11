@@ -11,11 +11,12 @@ import java.util.stream.Collectors;
 
 import static ris58h.goleador.processor.Utils.readInputToString;
 
-public class ReduceScoresProcessor {
-    public static void process(String dirName, String inSuffix, String outFileName) throws Exception {
-        Path dirPath = Paths.get(dirName);
-        String inPostfix = inSuffix + ".txt";
-        String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
+public class ReduceScoresProcessor implements Processor {
+
+    @Override
+    public void process(String inName, String outName, String workingDir) throws Exception {
+        Path dirPath = Paths.get(workingDir);
+        String inGlob = FrameUtils.glob(inName, "txt");
         SortedMap<Integer, Score> scores = new TreeMap<>();
         System.out.println("Loadings scores");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
@@ -26,9 +27,7 @@ public class ReduceScoresProcessor {
                 }
                 if (!scoreString.isEmpty()) {
                     Score score = Score.parseScore(scoreString);
-                    String name = path.getName(path.getNameCount() - 1).toString();
-                    String prefix = name.substring(0, name.length() - inPostfix.length());
-                    int frameNumber = Integer.parseInt(prefix);
+                    int frameNumber = FrameUtils.frameNumber(path);
                     scores.put(frameNumber, score);
                 }
             }
@@ -37,7 +36,7 @@ public class ReduceScoresProcessor {
         List<String> lines = reducedScores.stream()
                 .map(Object::toString)
                 .collect(Collectors.toList());
-        Files.write(dirPath.resolve(outFileName), lines, Charset.forName("UTF-8"));
+        Files.write(dirPath.resolve(outName + ".txt"), lines, Charset.forName("UTF-8"));
     }
 
     static List<ScoreFrames> reduceScores(SortedMap<Integer, Score> scores) {

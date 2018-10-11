@@ -9,17 +9,16 @@ import java.nio.file.*;
 import static ris58h.goleador.processor.Utils.readImage;
 import static ris58h.goleador.processor.Utils.writeImage;
 
-public class PreOcrProcessor {
-    public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
-        Path dirPath = Paths.get(dirName);
-        String inPostfix = inSuffix + ".png";
-        String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
+public class PreOcrProcessor implements Processor {
+
+    @Override
+    public void process(String inName, String outName, String workingDir) throws Exception {
+        Path dirPath = Paths.get(workingDir);
+        String inGlob = FrameUtils.glob(inName, "png");
         System.out.println("Preparing frames for OCR");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             for (Path path : stream) {
-                String name = path.getName(path.getNameCount() - 1).toString();
-                String prefix = name.substring(0, name.length() - inPostfix.length());
-                Path outPath = path.resolveSibling(prefix + outSuffix + ".png");
+                Path outPath = FrameUtils.resolveSiblingPath(path, outName, "png");
                 prepare(path, outPath);
             }
         }

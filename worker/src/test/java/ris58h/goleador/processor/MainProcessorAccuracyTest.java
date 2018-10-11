@@ -10,17 +10,20 @@ public class MainProcessorAccuracyTest {
 
     static final Path testDirPath = Paths.get("test");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        MainProcessor mainProcessor = new MainProcessor();
+        mainProcessor.init();
         AccuracyTest.runFor(Collections.singletonList(
                 Collections.singletonList(1)//TODO
-        ), params -> measure());
+        ), params -> measure(mainProcessor));
+        mainProcessor.dispose();
     }
 
-    private static double measure(/*PARAMS*/) {
+    private static double measure(MainProcessor mainProcessor) {
         F1ScoreMeasure<Score> measure = new F1ScoreMeasure<>();
         for (Map.Entry<String, List<String>> entry : MainProcessorTestData.DATA_BY_VIDEO.entrySet()) {
             try {
-                process(entry.getKey(), entry.getValue(), measure);
+                process(entry.getKey(), entry.getValue(), measure, mainProcessor);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -30,7 +33,8 @@ public class MainProcessorAccuracyTest {
 
     private static void process(String videoId,
                                 List<String> expectedLines,
-                                F1ScoreMeasure<Score> measure) throws Exception {
+                                F1ScoreMeasure<Score> measure,
+                                MainProcessor mainProcessor) throws Exception {
         Path inputPath = testDirPath.resolve("video").resolve(FORMAT).resolve(videoId + ".mp4");
         File inputFile = inputPath.toFile();
         if (!inputFile.exists()) {
@@ -43,7 +47,7 @@ public class MainProcessorAccuracyTest {
             workingDirFile.mkdirs();
         }
         String workingDir = workingDirFile.getAbsolutePath();
-        List<ScoreFrames> reducedScores = MainProcessor.process(input, workingDir);
+        List<ScoreFrames> reducedScores = mainProcessor.process(input, workingDir);
         Map<Integer, Score> expectedScoreByFrame = scoreByFrame(expectedLines.stream()
                 .map(ScoreFrames::parse)
                 .iterator());

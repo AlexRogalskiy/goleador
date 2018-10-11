@@ -1,8 +1,6 @@
 package ris58h.goleador.processor;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -14,7 +12,18 @@ import java.util.stream.Stream;
 class MainProcessorIT {
     static final String FORMAT = "136"; // 720p
 
-    Path testDirPath = Paths.get("test");
+    static Path testDirPath = Paths.get("test");
+    static MainProcessor mainProcessor = new MainProcessor();
+
+    @BeforeAll
+    static void beforeAll() throws Exception {
+        mainProcessor.init();
+    }
+
+    @AfterAll
+    static void afterAll() throws Exception {
+        mainProcessor.dispose();
+    }
 
     @TestFactory
     Stream<DynamicTest> tests() {
@@ -24,7 +33,7 @@ class MainProcessorIT {
                 }));
     }
 
-    void test(String videoId, List<String> expectedLines) throws Exception {
+    private void test(String videoId, List<String> expectedLines) throws Exception {
         Path inputPath = testDirPath.resolve("video").resolve(FORMAT).resolve(videoId + ".mp4");
         File inputFile = inputPath.toFile();
         if (!inputFile.exists()) {
@@ -37,7 +46,7 @@ class MainProcessorIT {
             workingDirFile.mkdirs();
         }
         String workingDir = workingDirFile.getAbsolutePath();
-        List<String> lines = MainProcessor.process(input, workingDir).stream()
+        List<String> lines = mainProcessor.process(input, workingDir).stream()
                 .map(ScoreFrames::toString)
                 .collect(Collectors.toList());
         Assertions.assertIterableEquals(expectedLines, lines);

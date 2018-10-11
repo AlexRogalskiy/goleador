@@ -28,6 +28,12 @@ public class App {
                 appProperties.apply("datasource.url").get(),
                 appProperties.apply("datasource.username").get(),
                 appProperties.apply("datasource.password").get());
+        MainProcessor mainProcessor = new MainProcessor();
+        try {
+            mainProcessor.init();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         while (true) {
             String videoId = null;
             try {
@@ -41,7 +47,7 @@ public class App {
                 try {
                     tempDirectory = Files.createTempDirectory("goleador-");
                     long timeBefore = System.currentTimeMillis();
-                    List<Integer> times = process(videoId, tempDirectory);
+                    List<Integer> times = process(videoId, tempDirectory, mainProcessor);
                     long elapsedTime = System.currentTimeMillis() - timeBefore;
                     log("Video " + videoId + " has been processed in " + (elapsedTime / 1000) + " seconds");
                     updateVideoTimes(videoId, times, connectionSupplier);
@@ -95,10 +101,12 @@ public class App {
         };
     }
 
-    private static List<Integer> process(String videoId, Path tempDirectory) throws Exception {
+    private static List<Integer> process(String videoId,
+                                         Path tempDirectory,
+                                         MainProcessor mainProcessor) throws Exception {
         String videoUrl = VideoUrlFetcher.fetchFor(videoId, FORMAT);
         String dirName = tempDirectory.toAbsolutePath().toString();
-        List<ScoreFrames> scoreFrames = MainProcessor.process(videoUrl, dirName);
+        List<ScoreFrames> scoreFrames = mainProcessor.process(videoUrl, dirName);
         return Highlighter.times(scoreFrames);
     }
 

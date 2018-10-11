@@ -9,12 +9,12 @@ import java.nio.file.Paths;
 
 import static ris58h.goleador.processor.Utils.readInputToString;
 
-public class ScoresProcessor {
+public class ScoresProcessor implements Processor {
 
-    public static void process(String dirName, String inSuffix, String outSuffix) throws Exception {
-        Path dirPath = Paths.get(dirName);
-        String inPostfix = inSuffix + ".txt";
-        String inGlob = "[0-9][0-9][0-9][0-9]*" + inPostfix;
+    @Override
+    public void process(String inName, String outName, String workingDir) throws Exception {
+        Path dirPath = Paths.get(workingDir);
+        String inGlob = FrameUtils.glob(inName, "txt");
         System.out.println("Extracting scores");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             for (Path path : stream) {
@@ -23,10 +23,8 @@ public class ScoresProcessor {
                     text = readInputToString(is);
                 }
                 Score score = ScoreMatcher.find(text);
-                String name = path.getName(path.getNameCount() - 1).toString();
-                String prefix = name.substring(0, name.length() - inPostfix.length());
-                Path outPath = path.resolveSibling(prefix + outSuffix + ".txt");
-                String scoreString = score == null ? "" : score.left + "-" + score.right;
+                String scoreString = score == null ? "" : score.toString();
+                Path outPath = FrameUtils.resolveSiblingPath(path, outName, "txt");
                 Files.write(outPath, scoreString.getBytes(StandardCharsets.UTF_8));
             }
         }
