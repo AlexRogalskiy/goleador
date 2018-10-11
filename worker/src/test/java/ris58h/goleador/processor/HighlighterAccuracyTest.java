@@ -16,13 +16,13 @@ public class HighlighterAccuracyTest {
         ), params -> measure((Integer) params.get(0)));
     }
 
-    public static Number measure(int back) {
+    public static double measure(int back) {
         LeastSquaresMeasure measure = new LeastSquaresMeasure();
         for (Map.Entry<String, ScoresAndTimes> entry : HighlighterTestData.DATA_BY_VIDEO.entrySet()) {
             ScoresAndTimes value = entry.getValue();
             process(value.reducedScoreLines, value.expectedTimes, measure, back);
         }
-        return measure.computeResult();
+        return measure.result();
     }
 
     private static void process(List<String> reducedScoreLines,

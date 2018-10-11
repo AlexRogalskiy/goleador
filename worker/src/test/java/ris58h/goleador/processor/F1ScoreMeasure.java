@@ -22,17 +22,17 @@ public class F1ScoreMeasure<T> {
         }
     }
 
-    public float computePrecision() {
-        return ((float) tp) / (tp + fp);
+    public double precision() {
+        return ((double) tp) / (tp + fp);
     }
 
-    public float computeRecall() {
-        return ((float) tp) / (tp + fn);
+    public double recall() {
+        return ((double) tp) / (tp + fn);
     }
 
-    public Number computeResult() {
-        float precision = computePrecision();
-        float recall = computeRecall();
+    public double result() {
+        double precision = precision();
+        double recall = recall();
         return 2 * precision * recall * (precision + recall);
     }
 }

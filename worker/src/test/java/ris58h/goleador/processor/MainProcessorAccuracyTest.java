@@ -16,7 +16,7 @@ public class MainProcessorAccuracyTest {
         ), params -> measure());
     }
 
-    private static Number measure(/*PARAMS*/) {
+    private static double measure(/*PARAMS*/) {
         F1ScoreMeasure<Score> measure = new F1ScoreMeasure<>();
         for (Map.Entry<String, List<String>> entry : MainProcessorTestData.DATA_BY_VIDEO.entrySet()) {
             try {
@@ -25,7 +25,7 @@ public class MainProcessorAccuracyTest {
                 throw new RuntimeException(e);
             }
         }
-        return measure.computeResult();
+        return measure.result();
     }
 
     private static void process(String videoId,
