@@ -11,12 +11,21 @@ public class MainProcessorAccuracyTest {
     static final Path testDirPath = Paths.get("test");
 
     public static void main(String[] args) throws Exception {
-        MainProcessor mainProcessor = new MainProcessor();
-        mainProcessor.init();
         AccuracyTest.runFor(Collections.singletonList(
-                Collections.singletonList(1)//TODO
-        ), params -> measure(mainProcessor));
-        mainProcessor.dispose();
+                Collections.singletonList(3) // psm
+        ), params -> {
+            try {
+                MainProcessor mainProcessor = new MainProcessor();
+                Map<String, String> paramsMap = new HashMap<>();
+                paramsMap.put("ocr.psm", Integer.toString((Integer) params.get(0)));
+                mainProcessor.init(Parameters.fromMap(paramsMap));
+                double measure = measure(mainProcessor);
+                mainProcessor.dispose();
+                return measure;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private static double measure(MainProcessor mainProcessor) {

@@ -15,8 +15,11 @@ public class AccuracyTest {
         }
         for (List<?> params : cartesianProduct) {
             try {
+                long before = System.currentTimeMillis();
                 Comparable result = testFunction.apply(params);
-                print(params, result);
+                long sec = (System.currentTimeMillis() - before) / 1000;
+                System.out.print("Done in " + sec + "sec. Result ");
+                println(params, result);
                 if (bestResult == null || result.compareTo(bestResult) < 0) {
                     bestResult = result;
                     bestParams = params;
@@ -27,13 +30,13 @@ public class AccuracyTest {
         }
         if (bestResult != null) {
             System.out.print("Best: ");
-            print(bestParams, bestResult);
+            println(bestParams, bestResult);
         } else {
             System.out.println("No result!");
         }
     }
 
-    private static void print(List<?> params, Comparable result) {
+    private static void println(List<?> params, Comparable result) {
         System.out.println(String.format(
                 "%s for %s",
                 result.toString(),
