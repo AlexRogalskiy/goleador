@@ -16,4 +16,15 @@ public interface Parameters extends Function<String, Optional<String>> {
     static Parameters subParameters(Parameters target, String base) {
         return (key) -> target.apply(base + "." + key);
     }
+
+    static Parameters empty() {
+        return (key) -> Optional.empty();
+    }
+
+    static Parameters combine(Parameters first, Parameters second) {
+        return (key) -> {
+            Optional<String> val = first.apply(key);
+            return val.isPresent() ? val : second.apply(key);
+        };
+    }
 }

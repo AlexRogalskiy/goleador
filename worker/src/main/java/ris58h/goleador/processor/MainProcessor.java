@@ -17,8 +17,13 @@ public class MainProcessor {
     )), DefaultProcessorFactory.INSTANCE);
 
     public void init() throws Exception {
+        this.init(Parameters.empty());
+    }
+
+    public void init(Parameters overrideParameters) throws Exception {
         InputStream is = MainProcessor.class.getResourceAsStream("main-pipeline.properties");
-        pipeline.init(Parameters.fromInputStream(is));
+        Parameters mainParameters = Parameters.fromInputStream(is);
+        pipeline.init(Parameters.combine(overrideParameters, mainParameters));
     }
 
     public List<ScoreFrames> process(String input, String dirName) throws Exception {
