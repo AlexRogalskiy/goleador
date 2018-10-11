@@ -10,7 +10,7 @@ public class MainProcessor {
     private final Pipeline pipeline = Pipeline.create(String.join(",", Arrays.asList(
             "frame",
             "static",
-            "preocr",
+            "blur",
             "ocr",
             "scores",
             "reduceScores"

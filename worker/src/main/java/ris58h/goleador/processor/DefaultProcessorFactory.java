@@ -9,7 +9,7 @@ public class DefaultProcessorFactory {
     static {
         SUPPLIERS.put("frame", FramesProcessor::new);
         SUPPLIERS.put("static", StaticProcessor::new);
-        SUPPLIERS.put("preocr", PreOcrProcessor::new);
+        SUPPLIERS.put("blur", BlurProcessor::new);
         SUPPLIERS.put("ocr", OcrProcessor::new);
         SUPPLIERS.put("scores", ScoresProcessor::new);
         SUPPLIERS.put("reduceScores", ReduceScoresProcessor::new);
