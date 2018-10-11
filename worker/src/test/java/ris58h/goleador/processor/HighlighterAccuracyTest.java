@@ -17,7 +17,7 @@ public class HighlighterAccuracyTest {
     }
 
     public static double measure(int back) {
-        LeastSquaresMeasure measure = new LeastSquaresMeasure();
+        LeastSquares measure = new LeastSquares();
         for (Map.Entry<String, ScoresAndTimes> entry : HighlighterTestData.DATA_BY_VIDEO.entrySet()) {
             ScoresAndTimes value = entry.getValue();
             process(value.reducedScoreLines, value.expectedTimes, measure, back);
@@ -27,7 +27,7 @@ public class HighlighterAccuracyTest {
 
     private static void process(List<String> reducedScoreLines,
                                 List<ExpectedTime> expectedTimes,
-                                LeastSquaresMeasure measure,
+                                LeastSquares measure,
                                 int back) {
         List<ScoreFrames> reducedScores = reducedScoreLines.stream()
                 .map(ScoreFrames::parse)

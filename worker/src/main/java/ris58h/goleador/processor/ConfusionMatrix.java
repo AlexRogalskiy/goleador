@@ -1,10 +1,20 @@
 package ris58h.goleador.processor;
 
-public class F1ScoreMeasure<T> {
+public class ConfusionMatrix<T> {
     private int tp;
     private int tn;
     private int fp;
     private int fn;
+
+    public ConfusionMatrix() {
+    }
+
+    public ConfusionMatrix(int tp, int tn, int fp, int fn) {
+        this.tp = tp;
+        this.tn = tn;
+        this.fp = fp;
+        this.fn = fn;
+    }
 
     public void add(T expected, T actual) {
         if (actual == null) {
@@ -30,9 +40,11 @@ public class F1ScoreMeasure<T> {
         return ((double) tp) / (tp + fn);
     }
 
-    public double result() {
-        double precision = precision();
-        double recall = recall();
-        return 2 * precision * recall * (precision + recall);
+//    public double accuracy() {
+//        return ((double) (tp + tn)) / (tp + tn + fp + fn);
+//    }
+
+    public double f1() {
+        return 2.0 * tp / (2 * tp + fp + fn);
     }
 }

@@ -29,7 +29,7 @@ public class MainProcessorAccuracyTest {
     }
 
     private static double measure(MainProcessor mainProcessor) {
-        F1ScoreMeasure<Score> measure = new F1ScoreMeasure<>();
+        ConfusionMatrix<Score> measure = new ConfusionMatrix<>();
         for (Map.Entry<String, List<String>> entry : MainProcessorTestData.DATA_BY_VIDEO.entrySet()) {
             try {
                 process(entry.getKey(), entry.getValue(), measure, mainProcessor);
@@ -37,12 +37,12 @@ public class MainProcessorAccuracyTest {
                 throw new RuntimeException(e);
             }
         }
-        return measure.result();
+        return measure.f1();
     }
 
     private static void process(String videoId,
                                 List<String> expectedLines,
-                                F1ScoreMeasure<Score> measure,
+                                ConfusionMatrix<Score> measure,
                                 MainProcessor mainProcessor) throws Exception {
         Path inputPath = testDirPath.resolve("video").resolve(FORMAT).resolve(videoId + ".mp4");
         File inputFile = inputPath.toFile();

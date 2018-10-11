@@ -1,6 +1,6 @@
 package ris58h.goleador.processor;
 
-class LeastSquaresMeasure {
+class LeastSquares {
     private double sum = 0;
 
     public void add(double expected, double actual) {
