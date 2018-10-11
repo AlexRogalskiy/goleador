@@ -13,8 +13,8 @@ public class BlurProcessor implements Processor {
     private double sigma = 1;
 
     @Override
-    public void init(Props properties) throws Exception {
-        properties.apply("sigma").ifPresent(value -> {
+    public void init(Parameters parameters) throws Exception {
+        parameters.apply("sigma").ifPresent(value -> {
             sigma = Double.parseDouble(value);
         });
     }

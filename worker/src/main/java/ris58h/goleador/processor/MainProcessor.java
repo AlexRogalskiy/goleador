@@ -18,7 +18,7 @@ public class MainProcessor {
 
     public void init() throws Exception {
         InputStream is = MainProcessor.class.getResourceAsStream("main-pipeline.properties");
-        pipeline.init(Props.fromInputStream(is));
+        pipeline.init(Parameters.fromInputStream(is));
     }
 
     public List<ScoreFrames> process(String input, String dirName) throws Exception {

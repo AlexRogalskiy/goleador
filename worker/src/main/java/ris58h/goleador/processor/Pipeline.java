@@ -26,11 +26,11 @@ public class Pipeline {
         return new Pipeline(processorDescriptors);
     }
 
-    public void init(Props properties) throws Exception {
+    public void init(Parameters parameters) throws Exception {
         for (ProcessorDescriptor processorDescriptor : processorDescriptors) {
             if (!processorDescriptor.disabled) {
-                Props subProps = Props.subProps(properties, processorDescriptor.name);
-                processorDescriptor.processor.init(subProps);
+                Parameters processorParameters = Parameters.subParameters(parameters, processorDescriptor.name);
+                processorDescriptor.processor.init(processorParameters);
             }
         }
     }
