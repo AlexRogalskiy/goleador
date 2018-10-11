@@ -2,15 +2,9 @@ package ris58h.goleador.core;
 
 import ris58h.goleador.core.processor.Parameters;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class MainProcessorAccuracyTest {
-    static final String FORMAT = "136"; // 720p
-
-    static final Path testDirPath = Paths.get("test");
 
     public static void main(String[] args) throws Exception {
         AccuracyTest.runFor(Collections.singletonList(
@@ -46,19 +40,7 @@ public class MainProcessorAccuracyTest {
                                 List<String> expectedLines,
                                 ConfusionMatrix<Score> measure,
                                 MainProcessor mainProcessor) throws Exception {
-        Path inputPath = testDirPath.resolve("video").resolve(FORMAT).resolve(videoId + ".mp4");
-        File inputFile = inputPath.toFile();
-        if (!inputFile.exists()) {
-            throw new RuntimeException("Input file not found: " + inputFile);
-        }
-        String input = inputFile.getAbsolutePath();
-        Path workingDirPath = testDirPath.resolve("work").resolve(FORMAT).resolve(videoId);
-        File workingDirFile = workingDirPath.toFile();
-        if (!workingDirFile.exists()) {
-            workingDirFile.mkdirs();
-        }
-        String workingDir = workingDirFile.getAbsolutePath();
-        List<ScoreFrames> reducedScores = mainProcessor.process(input, workingDir);
+        List<ScoreFrames> reducedScores = MainProcessorTestHelper.process(videoId, mainProcessor);
         Map<Integer, Score> expectedScoreByFrame = scoreByFrame(expectedLines.stream()
                 .map(ScoreFrames::parse)
                 .iterator());
