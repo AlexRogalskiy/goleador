@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static ris58h.goleador.processor.Utils.readImage;
-import static ris58h.goleador.processor.Utils.writeImage;
+import static ris58h.goleador.processor.ImageUtils.readImage;
+import static ris58h.goleador.processor.ImageUtils.writeImage;
 
 public class StaticProcessor implements Processor {
     private static final int COLOR_BLACK = 0;

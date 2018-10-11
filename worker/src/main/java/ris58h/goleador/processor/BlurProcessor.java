@@ -6,8 +6,8 @@ import ij.process.ImageProcessor;
 
 import java.nio.file.*;
 
-import static ris58h.goleador.processor.Utils.readImage;
-import static ris58h.goleador.processor.Utils.writeImage;
+import static ris58h.goleador.processor.ImageUtils.readImage;
+import static ris58h.goleador.processor.ImageUtils.writeImage;
 
 public class BlurProcessor implements Processor {
     private double sigma = 1;
