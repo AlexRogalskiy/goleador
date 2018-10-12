@@ -1,5 +1,6 @@
 package ris58h.goleador.core.processor;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import ris58h.goleador.core.Score;
 import ris58h.goleador.core.ScoreFrames;
@@ -45,19 +46,27 @@ class ReduceScoresProcessorTest {
         assertIterableEquals(expected, reducedScores);
     }
 
-    @Test
-    void reduceScoresThatDoesntStartWith0_0() {
-        SortedMap<Integer, Score> scores = scores(Arrays.asList(
-                Score.of(0, 1),
-                Score.of(1, 1)
-        ));
-        List<ScoreFrames> reducedScores = ReduceScoresProcessor.reduceScores(scores);
-        List<ScoreFrames> expected = Arrays.asList(
-                new ScoreFrames(Score.of(0, 1), 1, 1),
-                new ScoreFrames(Score.of(1, 1), 2, 2)
-        );
-        assertIterableEquals(expected, reducedScores);
+    @Nested
+    class ScoresThatDontStartWith_0_0 {
+        @Test
+        void test1() {
+            SortedMap<Integer, Score> scores = scores(Arrays.asList(
+                    Score.of(0, 1)
+            ));
+            List<ScoreFrames> reducedScores = ReduceScoresProcessor.reduceScores(scores);
+            assertTrue(reducedScores.isEmpty());
+        }
+
+        @Test
+        void test2() {
+            SortedMap<Integer, Score> scores = scores(Arrays.asList(
+                    Score.of(1, 1)
+            ));
+            List<ScoreFrames> reducedScores = ReduceScoresProcessor.reduceScores(scores);
+            assertTrue(reducedScores.isEmpty());
+        }
     }
+
 
     private SortedMap<Integer, Score> scores(List<Score> scoreList) {
         SortedMap<Integer, Score> scores = new TreeMap<>();

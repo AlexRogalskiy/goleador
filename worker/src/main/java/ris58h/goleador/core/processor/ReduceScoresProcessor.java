@@ -45,21 +45,28 @@ public class ReduceScoresProcessor implements Processor {
     static List<ScoreFrames> reduceScores(SortedMap<Integer, Score> scores) {
         List<ScoreFrames> result = new ArrayList<>();
         if (!scores.isEmpty()) {
-            Score prevScore = Score.of(0, 0);
+            Score prevScore = null;
             Integer first = null;
             Integer last = null;
             for (Map.Entry<Integer, Score> entry : scores.entrySet()) {
                 Integer frame = entry.getKey();
                 Score score = entry.getValue();
+                if (prevScore == null) {
+                    // first score must be 0-0
+                    if (score.equals(Score.of(0, 0))) {
+                        prevScore = score;
+                    } else {
+                        break;
+                    }
+                }
                 if (first == null) {
                     first = frame;
                 }
-                boolean leftSame = score.left == prevScore.left;
-                boolean leftChanged = score.left == prevScore.left + 1;
-                boolean rightSame = score.right == prevScore.right;
-                boolean rightChanged = score.right == prevScore.right + 1;
-                if ((leftSame || leftChanged) && (rightSame || rightChanged)) {
-                    if ((leftChanged && rightSame) || (leftSame && rightChanged)) {
+                int leftDiff = score.left - prevScore.left;
+                int rightDiff = score.right - prevScore.right;
+                int diff = leftDiff + rightDiff;
+                if (diff <= 1) {
+                    if (diff > 0) {
                         if (last != null) {
                             result.add(new ScoreFrames(prevScore, first, last));
                         }
