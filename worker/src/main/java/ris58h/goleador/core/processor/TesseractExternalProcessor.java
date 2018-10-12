@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import static ris58h.goleador.core.IOUtils.readInputToString;
 
-public class OcrProcessor implements Processor {
+public class TesseractExternalProcessor implements Processor {
     private int psm = -1;
 
     @Override

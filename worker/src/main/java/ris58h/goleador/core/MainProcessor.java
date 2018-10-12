@@ -17,18 +17,18 @@ public class MainProcessor {
         SUPPLIERS.put("frame", FramesProcessor::new);
         SUPPLIERS.put("static", StaticProcessor::new);
         SUPPLIERS.put("blur", BlurProcessor::new);
-        SUPPLIERS.put("ocr", OcrProcessor::new);
+        SUPPLIERS.put("tesseractExternal", TesseractExternalProcessor::new);
         SUPPLIERS.put("scores", ScoresProcessor::new);
         SUPPLIERS.put("reduceScores", ReduceScoresProcessor::new);
     }
 
-    public static final ProcessorFactory PROCESSOR_FACTORY = name -> SUPPLIERS.get(name).get();
+    private static final ProcessorFactory PROCESSOR_FACTORY = type -> SUPPLIERS.get(type).get();
 
     private final Pipeline pipeline = Pipeline.create(String.join(",", Arrays.asList(
             "frame",
             "static",
             "blur",
-            "ocr",
+            "ocr:tesseractExternal",
             "scores",
             "reduceScores"
     )), PROCESSOR_FACTORY);

@@ -17,11 +17,20 @@ public class Pipeline {
             throw new RuntimeException("No processors specified!");
         }
         List<ProcessorDescriptor> processorDescriptors = new ArrayList<>();
-        for (String processorDescription : split) {
-            boolean disabled = processorDescription.startsWith("-");
-            String processorName = disabled ? processorDescription.substring(1) : processorDescription;
-            Processor processor = processorFactory.create(processorName);
-            processorDescriptors.add(new ProcessorDescriptor(processor, processorName, disabled));
+        for (String description : split) {
+            boolean disabled = description.startsWith("-");
+            String nameAndType = disabled ? description.substring(1) : description;
+            int colonIndex = nameAndType.indexOf(':');
+            String name = colonIndex >= 0 ? nameAndType.substring(0, colonIndex) : nameAndType;
+            String type = colonIndex >= 0 ? nameAndType.substring(colonIndex + 1, nameAndType.length()) : nameAndType;
+            Processor processor = null;
+            if (!disabled) {
+                processor = processorFactory.create(type);
+                if (processor == null) {
+                    throw new RuntimeException("Couldn't create processor with type " + type);
+                }
+            }
+            processorDescriptors.add(new ProcessorDescriptor(processor, name, disabled));
         }
         return new Pipeline(processorDescriptors);
     }
