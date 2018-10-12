@@ -18,6 +18,7 @@ public class MainProcessor {
         SUPPLIERS.put("static", StaticProcessor::new);
         SUPPLIERS.put("blur", BlurProcessor::new);
         SUPPLIERS.put("tesseractExternal", TesseractExternalProcessor::new);
+        SUPPLIERS.put("tesseract", TesseractProcessor::new);
         SUPPLIERS.put("scores", ScoresProcessor::new);
         SUPPLIERS.put("reduceScores", ReduceScoresProcessor::new);
     }
@@ -28,7 +29,7 @@ public class MainProcessor {
             "frame",
             "static",
             "blur",
-            "ocr:tesseractExternal",
+            "ocr:tesseract",
             "scores",
             "reduceScores"
     )), PROCESSOR_FACTORY);

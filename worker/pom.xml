@@ -26,6 +26,11 @@
             <version>1.52g</version>
         </dependency>
         <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>tesseract-platform</artifactId>
+            <version>4.0.0-beta.3-1.4.2</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.jupiter.version}</version>
