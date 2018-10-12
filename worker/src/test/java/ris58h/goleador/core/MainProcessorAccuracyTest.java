@@ -8,12 +8,11 @@ public class MainProcessorAccuracyTest {
 
     public static void main(String[] args) throws Exception {
         AccuracyTest.runFor(Collections.singletonList(
-                Collections.singletonList(3) // psm
+                Collections.singletonList(null) // hack to run test
         ), params -> {
             try {
                 MainProcessor mainProcessor = new MainProcessor();
                 Map<String, String> paramsMap = new HashMap<>();
-                paramsMap.put("ocr.psm", Integer.toString((Integer) params.get(0)));
                 mainProcessor.init(Parameters.fromMap(paramsMap));
                 double measure = measure(mainProcessor);
                 mainProcessor.dispose();
