@@ -24,7 +24,7 @@ public class TesseractExternalProcessor implements Processor {
         System.out.println("OCR frames");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
             for (Path path : stream) {
-                Path outPath = FrameUtils.resolveSiblingPath(path, outName, "png");
+                Path outPath = FrameUtils.resolveSiblingPath(path, outName, "txt");
                 String in = path.toAbsolutePath().toString();
                 String out = outPath.toAbsolutePath().toString();
                 ocr(in, out);
