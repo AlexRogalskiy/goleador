@@ -33,6 +33,10 @@ class MainProcessorIT {
         List<String> lines = reducedScores.stream()
                 .map(ScoreFrames::toString)
                 .collect(Collectors.toList());
-        Assertions.assertIterableEquals(expectedLines, lines);
+        Assertions.assertIterableEquals(expectedLines, lines, () -> {
+            String expected = String.join("\n", expectedLines);
+            String actual = String.join("\n", lines);
+            return "\nExpected:\n" + expected + "\nActual:\n" + actual;
+        });
     }
 }
