@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class App {
 
     public static final String FORMAT = "136";
-    public static final long DEFAULT_DELAY = 30_000;
+    public static final long DEFAULT_DELAY = 15_000;
 
     public static void main(String[] args) {
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);

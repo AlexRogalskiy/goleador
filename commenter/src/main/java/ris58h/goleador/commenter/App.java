@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 public class App {
 
-    public static final long DEFAULT_DELAY = 30_000;
+    public static final long DEFAULT_DELAY = 15_000;
 
     public static void main(String[] args) {
         init();
