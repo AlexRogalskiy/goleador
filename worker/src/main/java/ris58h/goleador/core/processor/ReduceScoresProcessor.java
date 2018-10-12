@@ -51,19 +51,15 @@ public class ReduceScoresProcessor implements Processor {
             for (Map.Entry<Integer, Score> entry : scores.entrySet()) {
                 Integer frame = entry.getKey();
                 Score score = entry.getValue();
-                if (prevScore == null) {
-                    // first score must be 0-0
-                    if (score.equals(Score.of(0, 0))) {
-                        prevScore = score;
-                    } else {
-                        break;
-                    }
+                // first score must be 0-0
+                if (prevScore == null && !score.equals(Score.of(0, 0))) {
+                    break;
                 }
                 if (first == null) {
                     first = frame;
                 }
-                int leftDiff = score.left - prevScore.left;
-                int rightDiff = score.right - prevScore.right;
+                int leftDiff = prevScore == null ? 0 : score.left - prevScore.left;
+                int rightDiff = prevScore == null ? 0 : score.right - prevScore.right;
                 int diff = leftDiff + rightDiff;
                 if (diff <= 1) {
                     if (diff > 0) {
