@@ -43,39 +43,61 @@ public class ReduceScoresProcessor implements Processor {
     }
 
     static List<ScoreFrames> reduceScores(SortedMap<Integer, Score> scores) {
-        List<ScoreFrames> result = new ArrayList<>();
+        return reduceScores(scores, 2);
+    }
+
+    static List<ScoreFrames> reduceScores(SortedMap<Integer, Score> scores, int minSeqLength) {
+        if (minSeqLength < 1) {
+            throw new IllegalArgumentException();
+        }
+        Stack<ScoreFrames> stack = new Stack<>();
         if (!scores.isEmpty()) {
-            Score prevScore = null;
-            Integer first = null;
-            Integer last = null;
             for (Map.Entry<Integer, Score> entry : scores.entrySet()) {
                 Integer frame = entry.getKey();
                 Score score = entry.getValue();
-                // first score must be 0-0
-                if (prevScore == null && !score.equals(Score.of(0, 0))) {
-                    break;
-                }
-                if (first == null) {
-                    first = frame;
-                }
-                int leftDiff = prevScore == null ? 0 : score.left - prevScore.left;
-                int rightDiff = prevScore == null ? 0 : score.right - prevScore.right;
-                int diff = leftDiff + rightDiff;
-                if (diff <= 1) {
-                    if (diff > 0) {
-                        if (last != null) {
-                            result.add(new ScoreFrames(prevScore, first, last));
-                        }
-                        first = frame;
+                if (stack.empty()) {
+                    // first score must be 0-0
+                    if (!score.equals(Score.of(0, 0))) {
+                        break;
                     }
-                    prevScore = score;
-                    last = frame;
+                    stack.push(new ScoreFrames(score, frame, frame));
+                } else {
+                    ScoreFrames prev = stack.peek();
+                    if (score.equals(prev.score)) {
+                        prev.last = frame;
+                    } else {
+                        int leftDiff = Math.abs(score.left - prev.score.left);
+                        int rightDiff = Math.abs(score.right - prev.score.right);
+                        int diff = leftDiff + rightDiff;
+                        if (diff < 2) {
+                            int prevCount = prev.last - prev.first + 1;
+                            if (prevCount < minSeqLength) {
+                                stack.pop();
+                                if (stack.isEmpty()) {
+                                    stack.push(new ScoreFrames(score, frame, frame));
+                                } else {
+                                    ScoreFrames prevPrev = stack.peek();
+                                    if (score.equals(prevPrev.score)) {
+                                        prev.last = frame;
+                                    } else {
+                                        stack.push(new ScoreFrames(score, frame, frame));
+                                    }
+                                }
+                            } else {
+                                stack.push(new ScoreFrames(score, frame, frame));
+                            }
+                        }
+                    }
                 }
-            }
-            if (first != null && last != null) {
-                result.add(new ScoreFrames(prevScore, first, last));
             }
         }
-        return result;
+        if (!stack.isEmpty()) {
+            ScoreFrames prev = stack.peek();
+            int prevCount = prev.last - prev.first + 1;
+            if (prevCount < minSeqLength) {
+                stack.pop();
+            }
+        }
+        return stack;
     }
 }

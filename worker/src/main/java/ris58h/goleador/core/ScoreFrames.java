@@ -5,7 +5,7 @@ import java.util.Objects;
 public class ScoreFrames {
     public final Score score;
     public final int first;
-    public final int last;
+    public int last; // it's not final to simplify score reducer
 
     public ScoreFrames(Score score, int first, int last) {
         this.score = score;
