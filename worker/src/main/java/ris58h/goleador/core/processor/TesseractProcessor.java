@@ -1,6 +1,7 @@
 package ris58h.goleador.core.processor;
 
 import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.lept;
 import org.bytedeco.javacpp.tesseract;
 
@@ -9,6 +10,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TesseractProcessor implements Processor {
     private tesseract.TessBaseAPI api;
@@ -38,15 +41,68 @@ public class TesseractProcessor implements Processor {
     }
 
     private String ocr(String in) {
-        String result;
+        List<TextBox> textBoxes = new ArrayList<>();
+        int charWidthSum = 0;
+        int charCount = 0;
         lept.PIX image = lept.pixRead(in);
         api.SetImage(image);
         api.SetSourceResolution(70);// a hack to get rif of 'Warning. Invalid resolution 0 dpi. Using 70 instead.'
-        try (BytePointer text = api.GetUTF8Text()) {
-            result = text.getString();
+        api.Recognize(null);
+        try (tesseract.ResultIterator it = api.GetIterator();
+             IntPointer left = new IntPointer(1);
+             IntPointer top = new IntPointer(1);
+             IntPointer right = new IntPointer(1);
+             IntPointer bottom = new IntPointer(1)) {
+            if (!it.Empty(tesseract.RIL_SYMBOL)) {
+                do {
+                    String text;
+                    try (BytePointer symbol = it.GetUTF8Text(tesseract.RIL_SYMBOL)) {
+                        text = symbol.getString();
+                    }
+                    it.BoundingBox(tesseract.RIL_SYMBOL, left, top, right, bottom);
+                    textBoxes.add(new TextBox(
+                            text,
+                            left.get(),
+                            top.get(),
+                            right.get(),
+                            bottom.get()
+                    ));
+                    charWidthSum += right.get() - left.get();
+                    charCount += text.length();
+                } while (it.Next(tesseract.RIL_SYMBOL));
+            }
         }
         lept.pixDestroy(image);
-        return result;
+        StringBuilder sb = new StringBuilder();
+        if (charCount > 0) {
+            int avgCharWidth = charWidthSum / charCount;
+            int spaceThreshold = (int) (avgCharWidth * 1.3);
+            int prevRight = -1;
+            for (TextBox textBox : textBoxes) {
+                if (prevRight > 0 && (textBox.left - prevRight > spaceThreshold)) {
+                    sb.append(' ');
+                }
+                sb.append(textBox.text);
+                prevRight = textBox.right;
+            }
+        }
+        return sb.toString();
+    }
+
+    private static class TextBox {
+        final String text;
+        final int left;
+        final int top;
+        final int right;
+        final int bottom;
+
+        TextBox(String text, int left, int top, int right, int bottom) {
+            this.text = text;
+            this.left = left;
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+        }
     }
 
     @Override
