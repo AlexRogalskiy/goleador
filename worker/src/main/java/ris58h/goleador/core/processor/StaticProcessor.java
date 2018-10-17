@@ -27,13 +27,13 @@ public class StaticProcessor implements Processor {
     private static final int STATIC_GRAY_BACKGROUND = 111666777;
 
     private int batchSize = 5;
-    private int batchColorDelta = 2;
+    private int maxBatchColorDeviation = 10;
     private int morphNum = 7;
 
     @Override
     public void init(Parameters parameters) throws Exception {
         parameters.apply("batchSize").ifPresent(value -> batchSize = Integer.parseInt(value));
-        parameters.apply("batchColorDelta").ifPresent(value -> batchColorDelta = Integer.parseInt(value));
+        parameters.apply("maxBatchColorDeviation").ifPresent(value -> maxBatchColorDeviation = Integer.parseInt(value));
         parameters.apply("morphNum").ifPresent(value -> morphNum = Integer.parseInt(value));
     }
 
@@ -85,7 +85,7 @@ public class StaticProcessor implements Processor {
                             boolean sameColor = true;
                             for (int batchColor : batchColors) {
                                 int absDelta = Math.abs(avgColor - batchColor);
-                                if (absDelta > batchColorDelta) {
+                                if (absDelta > maxBatchColorDeviation) {
                                     sameColor = false;
                                     break;
                                 }

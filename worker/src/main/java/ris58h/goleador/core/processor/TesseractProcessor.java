@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TesseractProcessor implements Processor {
+    private static final double SPACE_THRESHOLD_FACTOR = 1.2;
+
     private tesseract.TessBaseAPI api;
 
     @Override
@@ -76,10 +78,10 @@ public class TesseractProcessor implements Processor {
         StringBuilder sb = new StringBuilder();
         if (charCount > 0) {
             int avgCharWidth = charWidthSum / charCount;
-            int spaceThreshold = (int) (avgCharWidth * 1.3);
+            int spaceThreshold = (int) (avgCharWidth * SPACE_THRESHOLD_FACTOR);
             int prevRight = -1;
             for (TextBox textBox : textBoxes) {
-                if (prevRight > 0 && (textBox.left - prevRight > spaceThreshold)) {
+                if (prevRight > 0 && textBox.left - prevRight > spaceThreshold) {
                     sb.append(' ');
                 }
                 sb.append(textBox.text);
@@ -110,5 +112,12 @@ public class TesseractProcessor implements Processor {
         if (api != null) {
             api.End();
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        TesseractProcessor processor = new TesseractProcessor();
+        processor.init(Parameters.empty());
+        String text = processor.ocr("test/0182-blur.png");
+        System.out.println(text);
     }
 }
