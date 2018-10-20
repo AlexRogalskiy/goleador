@@ -58,7 +58,7 @@ public class ReduceScoresProcessor implements Processor {
                 if (stack.empty()) {
                     // first score must be 0-0
                     if (!score.equals(Score.of(0, 0))) {
-                        break;
+                        continue;
                     }
                     stack.push(new ScoreFrames(score, frame, frame));
                 } else {

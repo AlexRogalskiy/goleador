@@ -83,6 +83,31 @@ class ReduceScoresProcessorTest {
             List<ScoreFrames> reducedScores = ReduceScoresProcessor.reduceScores(scores);
             assertTrue(reducedScores.isEmpty());
         }
+
+        @Test
+        void test3() {
+            SortedMap<Integer, Score> scores = scores(Arrays.asList(
+                    Score.of(6, 4),
+                    Score.of(0, 0),
+                    Score.of(0, 0),
+                    Score.of(0, 0),
+                    Score.of(0, 1),
+                    Score.of(0, 1),
+                    Score.of(0, 1),
+                    Score.of(0, 1),
+                    Score.of(0, 2),
+                    Score.of(0, 2),
+                    Score.of(0, 2),
+                    Score.of(0, 2)
+            ));
+            List<ScoreFrames> reducedScores = ReduceScoresProcessor.reduceScores(scores);
+            List<ScoreFrames> expected = Arrays.asList(
+                    new ScoreFrames(Score.of(0, 0), 2, 4),
+                    new ScoreFrames(Score.of(0, 1), 5, 8),
+                    new ScoreFrames(Score.of(0, 2), 9, 12)
+            );
+            assertIterableEquals(expected, reducedScores);
+        }
     }
 
 
