@@ -16,12 +16,14 @@ import java.util.List;
 public class TesseractProcessor implements Processor {
     private static final double SPACE_THRESHOLD_FACTOR = 1.2;
 
+    private String datapath = "tessdata";
+
     private tesseract.TessBaseAPI api;
 
     @Override
     public void init(Parameters parameters) throws Exception {
+        parameters.apply("datapath").ifPresent(value -> datapath = value);
         api = new tesseract.TessBaseAPI();
-        String datapath = "tessdata";
         int oem = 1; // we have to set oem to 1 to prevent native crash
         if (api.Init(datapath, "eng", oem) != 0) {
             throw new RuntimeException("Couldn't initialize tesseract!");
