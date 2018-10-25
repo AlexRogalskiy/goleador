@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 
 public class App {
 
-    public static final String FORMAT = "136";
-    public static final long DEFAULT_DELAY = 15_000;
+    private static final String FORMAT = "136";
+    private static final long DEFAULT_DELAY = 15;
 
     public static void main(String[] args) {
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
@@ -75,7 +75,7 @@ public class App {
 
             if (delay > 0) {
                 try {
-                    Thread.sleep(delay);
+                    Thread.sleep(delay * 1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
