@@ -5,3 +5,9 @@ CREATE TABLE video (
   error varchar(255),
   comment_id varchar(50) UNIQUE
 );
+
+CREATE TABLE channel (
+  id bigserial PRIMARY KEY,
+  channel_id varchar(30) UNIQUE NOT NULL,
+  since bigint
+);
