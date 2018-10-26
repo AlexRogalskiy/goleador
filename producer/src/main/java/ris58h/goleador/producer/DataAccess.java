@@ -1,5 +1,7 @@
 package ris58h.goleador.producer;
 
+import org.postgresql.Driver;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +16,13 @@ public class DataAccess {
         this.jdbcUrl = jdbcUrl;
         this.username = username;
         this.password = password;
+    }
+
+    public void init() throws Exception {
+        // Explicitly init Postgres driver to make psql jar be included in minimized app jar.
+        if (!org.postgresql.Driver.isRegistered()) {
+            Driver.register();
+        }
     }
 
     private Connection getConnection() throws Exception {

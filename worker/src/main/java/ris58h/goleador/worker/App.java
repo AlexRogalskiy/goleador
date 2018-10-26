@@ -30,6 +30,7 @@ public class App {
                 appProperties.apply("datasource.password").get());
         MainProcessor mainProcessor = new MainProcessor();
         try {
+            dataAccess.init();
             mainProcessor.init();
         } catch (Exception e) {
             throw new RuntimeException(e);

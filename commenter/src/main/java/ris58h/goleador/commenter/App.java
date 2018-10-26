@@ -1,12 +1,10 @@
 package ris58h.goleador.commenter;
 
-import org.postgresql.Driver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -18,9 +16,8 @@ public class App {
     private static final long DEFAULT_DELAY = 15;
 
     public static void main(String[] args) {
-        init();
-
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
+
         long delay = appProperties.apply("commenter.delay").map(Long::parseLong).orElse(DEFAULT_DELAY);
         DataAccess dataAccess = new DataAccess(
                 appProperties.apply("datasource.url").get(),
@@ -29,8 +26,13 @@ public class App {
         YouTubeCommenter youTubeCommenter = new YouTubeCommenter(
                 appProperties.apply("google.app.clientId").get(),
                 appProperties.apply("google.app.clientSecret").get(),
-                appProperties.apply("google.app.refreshToken").get()
-        );
+                appProperties.apply("google.app.refreshToken").get());
+        try {
+            dataAccess.init();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         while (true) {
             try {
                 dataAccess.processUncommentedVideos(videoTimes -> {
@@ -65,17 +67,6 @@ public class App {
                     throw new RuntimeException(e);
                 }
             }
-        }
-    }
-
-    private static void init() {
-        // Explicitly init Postgres driver to make psql jar be included in minimized app jar.
-        try {
-            if (!Driver.isRegistered()) {
-                Driver.register();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 

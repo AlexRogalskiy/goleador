@@ -18,6 +18,7 @@ public class App {
 
     public static void main(String[] args) {
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
+
         long delay = appProperties.apply("producer.delay").map(Long::parseLong).orElse(DEFAULT_DELAY);
         YoutubeAccess youtubeAccess = new YoutubeAccess(appProperties.apply("youtube.apiKey").get());
         int maxVideoDuration = appProperties.apply("producer.maxVideoDuration").map(Integer::parseInt)
@@ -26,6 +27,11 @@ public class App {
                 appProperties.apply("datasource.url").get(),
                 appProperties.apply("datasource.username").get(),
                 appProperties.apply("datasource.password").get());
+        try {
+            dataAccess.init();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         while (true) {
             Collection<Channel> channels = null;
