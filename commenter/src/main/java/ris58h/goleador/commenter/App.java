@@ -1,6 +1,8 @@
 package ris58h.goleador.commenter;
 
 import org.postgresql.Driver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class App {
+    private static final Logger log = LoggerFactory.getLogger(App.class);
 
     private static final long DEFAULT_DELAY = 15;
 
@@ -36,14 +39,14 @@ public class App {
             try {
                 processUncommentedVideos(connectionSupplier, videoTimes -> {
                     String videoId = videoTimes.videoId;
-                    log("Process uncommented video " + videoId);
+                    log.info("Process uncommented video " + videoId);
                     try {
                         String commentText = commentText(videoTimes.times);
                         String commentId = youTubeCommenter.comment(videoId, commentText);
                         updateCommentId(videoId, commentId, connectionSupplier);
-                        log("Video " + videoId + " has been commented: commentId=" + commentId);
+                        log.info("Video " + videoId + " has been commented: commentId=" + commentId);
                     } catch (Exception e) {
-                        logError("Processing error: " + videoId + ": " + e.getMessage(), e);
+                        log.error("Processing error: " + videoId + ": " + e.getMessage(), e);
                         try {
                             String error = e.getMessage();
                             if (error == null) {
@@ -51,12 +54,12 @@ public class App {
                             }
                             updateError(videoId, error, connectionSupplier);
                         } catch (Exception ee) {
-                            logError("Updating error: " + ee.getMessage(), e);
+                            log.error("Updating error: " + ee.getMessage(), e);
                         }
                     }
                 });
             } catch (Exception e) {
-                logError("Error: ", e);
+                log.error("Error: ", e);
             }
 
             if (delay > 0) {
@@ -136,15 +139,6 @@ public class App {
             }
             return Optional.ofNullable(property);
         };
-    }
-
-    private static void log(String message) {
-        System.out.println(message);
-    }
-
-    private static void logError(String message, Throwable e) {
-        System.err.println(message);
-        e.printStackTrace(System.err);
     }
 
     private static Supplier<Connection> connectionSupplier(String jdbcUrl, String username, String password) {

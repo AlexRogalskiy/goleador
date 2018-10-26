@@ -1,11 +1,16 @@
 package ris58h.goleador.producer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 
 public class App {
+    private static final Logger log = LoggerFactory.getLogger(App.class);
+
     private static final long DEFAULT_DELAY = 15;
     private static final int DEFAULT_MAX_VIDEO_DURATION = 12*60;
     private static final int DEFAULT_CHANNEL_CHECK_INTERVAL = 30 * 60 * 1000;
@@ -28,13 +33,13 @@ public class App {
                 long processedUntil = System.currentTimeMillis() - DEFAULT_CHANNEL_CHECK_INTERVAL;
                 channels = dataAccess.loadChannelsForProcessing(processedUntil);
             } catch (Exception e) {
-                logError("Can't load channels", e);
+                log.error("Can't load channels", e);
             }
             if (channels != null) {
                 for (Channel channel : channels) {
                     String channelId = channel.channelId;
                     Long since = channel.since;
-                    log("Process channel " + channelId);
+                    log.info("Process channel " + channelId);
                     long until = System.currentTimeMillis();
                     if (since == null) {
                         since = until - (DEFAULT_NEW_CHANNEL_GAP * 1000);
@@ -43,16 +48,16 @@ public class App {
                     try {
                         List<String> videoIds = youtubeAccess.getNewVideoIds(channelId, since, until);
                         if (videoIds.isEmpty()) {
-                            log("No new videos found on channel " + channelId);
+                            log.info("No new videos found on channel " + channelId);
                         } else {
-                            log("Found " + videoIds.size() + " new videos on channel " + channelId);
+                            log.info("Found " + videoIds.size() + " new videos on channel " + channelId);
                             List<String> filteredVideoIds = youtubeAccess.filterVideoIds(videoIds, maxVideoDuration);
-                            log(filteredVideoIds.size() + " videos left after filtering");
+                            log.info(filteredVideoIds.size() + " videos left after filtering");
                             dataAccess.saveVideoIds(filteredVideoIds);
                         }
                         dataAccess.updateChannelSince(channelId, until);
                     } catch (Exception e) {
-                        logError("Error for channel " + channelId, e);
+                        log.error("Error for channel " + channelId, e);
                     }
                 }
             }
@@ -83,14 +88,5 @@ public class App {
             }
             return Optional.ofNullable(property);
         };
-    }
-
-    private static void log(String message) {
-        System.out.println(message);
-    }
-
-    private static void logError(String message, Throwable e) {
-        System.err.println(message);
-        e.printStackTrace(System.err);
     }
 }

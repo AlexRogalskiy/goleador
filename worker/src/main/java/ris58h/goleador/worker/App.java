@@ -1,5 +1,7 @@
 package ris58h.goleador.worker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ris58h.goleador.core.Highlighter;
 import ris58h.goleador.core.MainProcessor;
 import ris58h.goleador.core.ScoreFrames;
@@ -17,6 +19,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class App {
+    private static final Logger log = LoggerFactory.getLogger(App.class);
 
     private static final String FORMAT = "136";
     private static final long DEFAULT_DELAY = 15;
@@ -39,21 +42,21 @@ public class App {
             try {
                 videoId = fetchUnprocessedVideoId(connectionSupplier);
             } catch (Exception e) {
-                logError("Error while fetching unprocessed video: " + e.getMessage(), e);
+                log.error("Error while fetching unprocessed video: " + e.getMessage(), e);
             }
             if (videoId != null) {
-                log("Start processing video " + videoId);
+                log.info("Start processing video " + videoId);
                 Path tempDirectory = null;
                 try {
                     tempDirectory = Files.createTempDirectory("goleador-");
                     long timeBefore = System.currentTimeMillis();
                     List<Integer> times = process(videoId, tempDirectory, mainProcessor);
                     long elapsedTime = System.currentTimeMillis() - timeBefore;
-                    log("Video " + videoId + " has been processed in " + (elapsedTime / 1000) + " seconds");
+                    log.info("Video " + videoId + " has been processed in " + (elapsedTime / 1000) + " seconds");
                     updateVideoTimes(videoId, times, connectionSupplier);
-                    log("Video times have been updated");
+                    log.info("Video times have been updated");
                 } catch (Exception e) {
-                    logError("Processing error for " + videoId + " video: " + e.getMessage(), e);
+                    log.error("Processing error for " + videoId + " video: " + e.getMessage(), e);
                     try {
                         String error = e.getMessage();
                         if (error == null) {
@@ -61,14 +64,14 @@ public class App {
                         }
                         updateError(videoId, error, connectionSupplier);
                     } catch (Exception ee) {
-                        logError("Updating error: " + ee.getMessage(), e);
+                        log.error("Updating error: " + ee.getMessage(), e);
                     }
                 }
                 if (tempDirectory != null) {
                     try {
                         Utils.deleteDirectory(tempDirectory);
                     } catch (IOException e) {
-                        logError("Error while deleting dir: " + e.getMessage(), e);
+                        log.error("Error while deleting dir: " + e.getMessage(), e);
                     }
                 }
             }
@@ -108,19 +111,10 @@ public class App {
         if (videoUrl == null) {
             throw new RuntimeException("No URL found for video " + videoId);
         }
-        log("URL for " + videoId + " video: " + videoUrl);
+        log.info("URL for " + videoId + " video: " + videoUrl);
         String dirName = tempDirectory.toAbsolutePath().toString();
         List<ScoreFrames> scoreFrames = mainProcessor.process(videoUrl, dirName);
         return Highlighter.times(scoreFrames);
-    }
-
-    private static void log(String message) {
-        System.out.println(message);
-    }
-
-    private static void logError(String message, Throwable e) {
-        System.err.println(message);
-        e.printStackTrace(System.err);
     }
 
     private static Supplier<Connection> connectionSupplier(String jdbcUrl, String username, String password) {
