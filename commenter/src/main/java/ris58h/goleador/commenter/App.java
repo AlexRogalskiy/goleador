@@ -10,11 +10,7 @@ import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class App {
     private static final Logger log = LoggerFactory.getLogger(App.class);
@@ -26,7 +22,7 @@ public class App {
 
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
         long delay = appProperties.apply("commenter.delay").map(Long::parseLong).orElse(DEFAULT_DELAY);
-        Supplier<Connection> connectionSupplier = connectionSupplier(
+        DataAccess dataAccess = new DataAccess(
                 appProperties.apply("datasource.url").get(),
                 appProperties.apply("datasource.username").get(),
                 appProperties.apply("datasource.password").get());
@@ -37,13 +33,13 @@ public class App {
         );
         while (true) {
             try {
-                processUncommentedVideos(connectionSupplier, videoTimes -> {
+                dataAccess.processUncommentedVideos(videoTimes -> {
                     String videoId = videoTimes.videoId;
                     log.info("Process uncommented video " + videoId);
                     try {
                         String commentText = commentText(videoTimes.times);
                         String commentId = youTubeCommenter.comment(videoId, commentText);
-                        updateCommentId(videoId, commentId, connectionSupplier);
+                        dataAccess.updateCommentId(videoId, commentId);
                         log.info("Video " + videoId + " has been commented: commentId=" + commentId);
                     } catch (Exception e) {
                         log.error("Processing error: " + videoId + ": " + e.getMessage(), e);
@@ -52,7 +48,7 @@ public class App {
                             if (error == null) {
                                 error = e.getClass().getName();
                             }
-                            updateError(videoId, error, connectionSupplier);
+                            dataAccess.updateError(videoId, error);
                         } catch (Exception ee) {
                             log.error("Updating error: " + ee.getMessage(), e);
                         }
@@ -96,33 +92,6 @@ public class App {
         return sb.toString();
     }
 
-
-    private static void updateCommentId(String videoId,
-                                        String commentId,
-                                        Supplier<Connection> connectionSupplier) throws Exception {
-        try (
-                Connection connection = connectionSupplier.get();
-                PreparedStatement ps = connection.prepareStatement(" UPDATE video " +
-                        " SET comment_id = ? " +
-                        " WHERE video_id = ? "
-                );
-        ) {
-            ps.setString(1, commentId);
-            ps.setString(2, videoId);
-            ps.executeUpdate();
-        }
-    }
-
-    private static class VideoTimes {
-        final String videoId;
-        final List<Integer> times;
-
-        public VideoTimes(String videoId, List<Integer> times) {
-            this.videoId = videoId;
-            this.times = times;
-        }
-    }
-
     private static Function<String, Optional<String>> appProperties(String propertiesPath) {
         Properties properties = new Properties();
         if (propertiesPath != null) {
@@ -139,58 +108,5 @@ public class App {
             }
             return Optional.ofNullable(property);
         };
-    }
-
-    private static Supplier<Connection> connectionSupplier(String jdbcUrl, String username, String password) {
-        return () -> {
-            try {
-                return DriverManager.getConnection(jdbcUrl, username, password);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        };
-    }
-
-    private static void processUncommentedVideos(Supplier<Connection> connectionSupplier,
-                                                 Consumer<VideoTimes> callback) throws Exception {
-        try (Connection connection = connectionSupplier.get()) {
-            connection.setAutoCommit(false);
-            try (Statement statement = connection.createStatement()) {
-                statement.setFetchSize(50);
-                try (ResultSet rs = statement.executeQuery(" SELECT video_id, times " +
-                        " FROM video " +
-                        " WHERE times <> '' AND comment_id IS NULL ")) {
-                    while (rs.next()) {
-                        String videoId = rs.getString(1);
-                        String timesString = rs.getString(2);
-                        if (!timesString.isEmpty()) {
-                            List<Integer> times = Stream.of(timesString.split(","))
-                                    .map(Integer::parseInt)
-                                    .collect(Collectors.toList());
-                            callback.accept(new VideoTimes(videoId, times));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static void updateError(String videoId,
-                                    String error,
-                                    Supplier<Connection> connectionSupplier) throws Exception {
-        if (error.length() > 255) {
-            error = error.substring(0, 255);
-        }
-        try (
-                Connection connection = connectionSupplier.get();
-                PreparedStatement ps = connection.prepareStatement(" UPDATE video " +
-                        " SET error = ? " +
-                        " WHERE video_id = ? "
-                );
-        ) {
-            ps.setString(1, error);
-            ps.setString(2, videoId);
-            ps.executeUpdate();
-        }
     }
 }
