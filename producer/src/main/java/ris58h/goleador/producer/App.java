@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 public class App {
     private static final long DEFAULT_DELAY = 15;
-//    private static final int DEFAULT_MAX_VIDEO_DURATION = 12*60;
+    private static final int DEFAULT_MAX_VIDEO_DURATION = 12*60;
     private static final int DEFAULT_CHANNEL_CHECK_INTERVAL = 30 * 60 * 1000;
     private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
 
@@ -15,8 +15,8 @@ public class App {
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
         long delay = appProperties.apply("producer.delay").map(Long::parseLong).orElse(DEFAULT_DELAY);
         YoutubeAccess youtubeAccess = new YoutubeAccess(appProperties.apply("youtube.apiKey").get());
-//        int maxVideoDuration = appProperties.apply("producer.maxVideoDuration").map(Integer::parseInt)
-//                .orElse(DEFAULT_MAX_VIDEO_DURATION);
+        int maxVideoDuration = appProperties.apply("producer.maxVideoDuration").map(Integer::parseInt)
+                .orElse(DEFAULT_MAX_VIDEO_DURATION);
         DataAccess dataAccess = new DataAccess(
                 appProperties.apply("datasource.url").get(),
                 appProperties.apply("datasource.username").get(),
@@ -46,8 +46,9 @@ public class App {
                             log("No new videos found on channel " + channelId);
                         } else {
                             log("Found " + videoIds.size() + " new videos on channel " + channelId);
-//                            videoIds = youtubeAccess.filterVideoIds(videoIds, maxVideoDuration);
-                            dataAccess.saveVideoIds(videoIds);
+                            List<String> filteredVideoIds = youtubeAccess.filterVideoIds(videoIds, maxVideoDuration);
+                            log(filteredVideoIds.size() + " videos left after filtering");
+                            dataAccess.saveVideoIds(filteredVideoIds);
                         }
                         dataAccess.updateChannelSince(channelId, until);
                     } catch (Exception e) {

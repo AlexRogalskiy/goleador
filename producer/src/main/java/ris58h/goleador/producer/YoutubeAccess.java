@@ -6,9 +6,13 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
+import com.google.api.services.youtube.model.Video;
+import com.google.api.services.youtube.model.VideoListResponse;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class YoutubeAccess {
     private static final long MAX_RESULTS = 50L;
@@ -20,7 +24,8 @@ public class YoutubeAccess {
     private final String key;
 
     public YoutubeAccess(String key) {
-        this.youTube = new YouTube.Builder(TRANSPORT, JSON_FACTORY, noop -> {}).build();
+        this.youTube = new YouTube.Builder(TRANSPORT, JSON_FACTORY, noop -> {
+        }).build();
         this.key = key;
     }
 
@@ -53,7 +58,25 @@ public class YoutubeAccess {
         return result;
     }
 
-//    public List<String> filterVideoIds(List<String> videoIds, int maxDuration) {
-//        return videoIds;//TODO
-//    }
+    public List<String> filterVideoIds(List<String> videoIds, long maxDuration) throws Exception {
+        YouTube.Videos.List list = youTube.videos().list("id,contentDetails")
+                .setId(String.join(",", videoIds))
+                .setFields("items(id,contentDetails(duration))")
+                .setKey(key);
+        VideoListResponse videoListResponse = list.execute();
+        List<Video> items = videoListResponse.getItems();
+        return items.stream()
+                .filter(video -> {
+                    String durationString = video.getContentDetails().getDuration();
+                    long duration = parseDuration(durationString);
+                    return duration <= maxDuration;
+                })
+                .map(Video::getId)
+                .collect(Collectors.toList());
+    }
+
+    private static long parseDuration(String durationString) {
+        Duration duration = Duration.parse(durationString);
+        return duration.getSeconds();
+    }
 }
