@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ris58h.goleador</groupId>
-    <artifactId>youtube-goleador-producer</artifactId>
+    <artifactId>goleador-producer</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>

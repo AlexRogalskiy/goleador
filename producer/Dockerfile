@@ -4,6 +4,6 @@ COPY pom.xml /usr/src/myapp
 RUN mvn -f /usr/src/myapp/pom.xml clean package
 
 FROM openjdk:8-jre-alpine
-COPY --from=build /usr/src/myapp/target/youtube-goleador-producer-1.0-SNAPSHOT.jar /youtube-goleador-producer-1.0-SNAPSHOT.jar
+COPY --from=build /usr/src/myapp/target/goleador-producer-1.0-SNAPSHOT.jar /goleador-producer-1.0-SNAPSHOT.jar
 COPY ./entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
