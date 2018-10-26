@@ -2,15 +2,21 @@ version: '2'
 services:
   db:
     image: goleador-db
+  producer:
+    image: goleador-producer
+    depends_on:
+    - db
     environment:
-    - POSTGRES_PASSWORD=TODO
-    ports:
-    - "5432:5432"
+    - DATASOURCE_URL=jdbc:postgresql://db:5432/goleador
   worker:
     image: goleador-worker
     depends_on:
     - db
     environment:
     - DATASOURCE_URL=jdbc:postgresql://db:5432/goleador
-    - DATASOURCE_USERNAME=goleador
-    - DATASOURCE_PASSWORD=TODO
+  commenter:
+    image: goleador-commenter
+    depends_on:
+    - db
+    environment:
+    - DATASOURCE_URL=jdbc:postgresql://db:5432/goleador
