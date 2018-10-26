@@ -38,14 +38,13 @@ public class App {
             if (channels != null) {
                 for (Channel channel : channels) {
                     String channelId = channel.channelId;
-                    Long since = channel.since;
                     log.info("Process channel " + channelId);
-                    long until = System.currentTimeMillis();
-                    if (since == null) {
-                        since = until - (DEFAULT_NEW_CHANNEL_GAP * 1000);
-                    }
-
                     try {
+                        Long since = channel.since;
+                        long until = System.currentTimeMillis();
+                        if (since == null) {
+                            since = until - (DEFAULT_NEW_CHANNEL_GAP * 1000);
+                        }
                         List<String> videoIds = youtubeAccess.getNewVideoIds(channelId, since, until);
                         if (videoIds.isEmpty()) {
                             log.info("No new videos found on channel " + channelId);
