@@ -37,7 +37,7 @@ public class DataAccess {
                 statement.setFetchSize(50);
                 try (ResultSet rs = statement.executeQuery(" SELECT video_id, times " +
                         " FROM video " +
-                        " WHERE times <> '' AND comment_id IS NULL ")) {
+                        " WHERE times <> '' AND comment_id IS NULL AND error IS NULL ")) {
                     while (rs.next()) {
                         String videoId = rs.getString(1);
                         String timesString = rs.getString(2);
