@@ -6,9 +6,10 @@ import java.util.*;
 import java.util.function.Function;
 
 public class App {
-    private static final long DEFAULT_DELAY = 30*60;
+    private static final long DEFAULT_DELAY = 15;
 //    private static final int DEFAULT_MAX_VIDEO_DURATION = 12*60;
-    private static final long DEFAULT_GAP = 24 * 60 * 60;
+    private static final int DEFAULT_CHANNEL_CHECK_INTERVAL = 30 * 60 * 1000;
+    private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
 
     public static void main(String[] args) {
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
@@ -24,18 +25,19 @@ public class App {
         while (true) {
             Collection<Channel> channels = null;
             try {
-                channels = dataAccess.loadChannels();
+                long processedUntil = System.currentTimeMillis() - DEFAULT_CHANNEL_CHECK_INTERVAL;
+                channels = dataAccess.loadChannelsForProcessing(processedUntil);
             } catch (Exception e) {
                 logError("Can't load channels", e);
             }
             if (channels != null) {
-
                 for (Channel channel : channels) {
                     String channelId = channel.channelId;
                     Long since = channel.since;
+                    log("Process channel " + channelId);
                     long until = System.currentTimeMillis();
                     if (since == null) {
-                        since = until - (DEFAULT_GAP * 1000);
+                        since = until - (DEFAULT_NEW_CHANNEL_GAP * 1000);
                     }
 
                     try {
