@@ -18,6 +18,8 @@ public class App {
         Producer producer = new Producer(youtubeAccess, dataAccess);
         appProperties.apply("producer.delay").map(Long::parseLong).ifPresent(producer::setDelay);
         appProperties.apply("producer.maxVideoDuration").map(Long::parseLong).ifPresent(producer::setMaxVideoDuration);
+        appProperties.apply("producer.channelCheckInterval").map(Long::parseLong).ifPresent(producer::setChannelCheckInterval);
+        appProperties.apply("producer.newChannelGap").map(Long::parseLong).ifPresent(producer::setNewChannelGap);
         try {
             dataAccess.init();
         } catch (Exception e) {
