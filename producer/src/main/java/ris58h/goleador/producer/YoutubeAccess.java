@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class YoutubeAccess {
     private static final long MAX_RESULTS = 50L;
@@ -57,25 +58,35 @@ public class YoutubeAccess {
         return result;
     }
 
-    public List<String> filterVideoIds(List<String> videoIds, long maxDuration) throws Exception {
-        YouTube.Videos.List list = youTube.videos().list("id,contentDetails")
+    public List<String> filterVideoIds(List<String> videoIds,
+                                       Long maxDuration,
+                                       String definition) throws Exception {
+        String part = "id";
+        if (maxDuration != null && definition != null) {
+            part += ",contentDetails";
+        }
+        String fields = "items(id";
+        if (maxDuration != null) {
+            fields += ",contentDetails/duration";
+        }
+        if (definition != null) {
+            fields += ",contentDetails/definition";
+        }
+        fields += ")";
+        YouTube.Videos.List list = youTube.videos().list(part)
                 .setId(String.join(",", videoIds))
-                .setFields("items(id,contentDetails(duration,definition))")
+                .setFields(fields)
                 .setKey(key);
         VideoListResponse videoListResponse = list.execute();
         List<Video> items = videoListResponse.getItems();
-        return items.stream()
-                .filter(video -> {
-                    String durationString = video.getContentDetails().getDuration();
-                    long duration = parseDuration(durationString);
-                    return duration <= maxDuration;
-                })
-                .filter(video -> {
-                    String definition = video.getContentDetails().getDefinition();
-                    return "hd".equals(definition);
-                })
-                .map(Video::getId)
-                .collect(Collectors.toList());
+        Stream<Video> stream = items.stream();
+        if (maxDuration != null) {
+            stream = stream.filter(video -> parseDuration(video.getContentDetails().getDuration()) <= maxDuration);
+        }
+        if (definition != null) {
+            stream = stream.filter(video -> definition.equals(video.getContentDetails().getDefinition()));
+        }
+        return stream.map(Video::getId).collect(Collectors.toList());
     }
 
     private static long parseDuration(String durationString) {

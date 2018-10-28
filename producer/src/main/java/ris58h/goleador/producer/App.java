@@ -12,8 +12,8 @@ public class App {
     private static final Logger log = LoggerFactory.getLogger(App.class);
 
     private static final long DEFAULT_DELAY = 15;
-    private static final int DEFAULT_MAX_VIDEO_DURATION = 12*60;
-    private static final int DEFAULT_CHANNEL_CHECK_INTERVAL = 30 * 60 * 1000;
+    private static final long DEFAULT_MAX_VIDEO_DURATION = 12*60;
+    private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 30 * 60 * 1000;
     private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
 
     public static void main(String[] args) {
@@ -21,7 +21,7 @@ public class App {
 
         long delay = appProperties.apply("producer.delay").map(Long::parseLong).orElse(DEFAULT_DELAY);
         YoutubeAccess youtubeAccess = new YoutubeAccess(appProperties.apply("youtube.apiKey").get());
-        int maxVideoDuration = appProperties.apply("producer.maxVideoDuration").map(Integer::parseInt)
+        long maxVideoDuration = appProperties.apply("producer.maxVideoDuration").map(Long::parseLong)
                 .orElse(DEFAULT_MAX_VIDEO_DURATION);
         DataAccess dataAccess = new DataAccess(
                 appProperties.apply("datasource.url").get(),
@@ -57,7 +57,7 @@ public class App {
                             log.info("No new videos found on channel " + channelId);
                         } else {
                             log.info("Found " + videoIds.size() + " new videos on channel " + channelId);
-                            List<String> filteredVideoIds = youtubeAccess.filterVideoIds(videoIds, maxVideoDuration);
+                            List<String> filteredVideoIds = youtubeAccess.filterVideoIds(videoIds, maxVideoDuration, "hd");
                             if (videoIds.size() != filteredVideoIds.size()) {
                                 HashSet<String> filteredOut = new HashSet<>(videoIds);
                                 filteredOut.removeAll(filteredVideoIds);
