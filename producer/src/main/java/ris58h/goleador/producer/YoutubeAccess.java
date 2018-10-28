@@ -36,7 +36,6 @@ public class YoutubeAccess {
             YouTube.Search.List search = youTube.search().list("id")
                     .setType("video")
                     .setChannelId(channelId)
-                    .setVideoDefinition("high")
                     .setFields("items(id(videoId)),nextPageToken")
                     .setOrder("date")
                     .setPublishedAfter(new DateTime(after))
@@ -61,7 +60,7 @@ public class YoutubeAccess {
     public List<String> filterVideoIds(List<String> videoIds, long maxDuration) throws Exception {
         YouTube.Videos.List list = youTube.videos().list("id,contentDetails")
                 .setId(String.join(",", videoIds))
-                .setFields("items(id,contentDetails(duration))")
+                .setFields("items(id,contentDetails(duration,definition))")
                 .setKey(key);
         VideoListResponse videoListResponse = list.execute();
         List<Video> items = videoListResponse.getItems();
@@ -70,6 +69,10 @@ public class YoutubeAccess {
                     String durationString = video.getContentDetails().getDuration();
                     long duration = parseDuration(durationString);
                     return duration <= maxDuration;
+                })
+                .filter(video -> {
+                    String definition = video.getContentDetails().getDefinition();
+                    return "hd".equals(definition);
                 })
                 .map(Video::getId)
                 .collect(Collectors.toList());
