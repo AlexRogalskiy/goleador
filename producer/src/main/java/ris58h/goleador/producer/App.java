@@ -1,85 +1,29 @@
 package ris58h.goleador.producer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 
 public class App {
-    private static final Logger log = LoggerFactory.getLogger(App.class);
-
-    private static final long DEFAULT_DELAY = 15;
-    private static final long DEFAULT_MAX_VIDEO_DURATION = 12*60;
-    private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 30 * 60 * 1000;
-    private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
 
     public static void main(String[] args) {
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
 
-        long delay = appProperties.apply("producer.delay").map(Long::parseLong).orElse(DEFAULT_DELAY);
         YoutubeAccess youtubeAccess = new YoutubeAccess(appProperties.apply("youtube.apiKey").get());
-        long maxVideoDuration = appProperties.apply("producer.maxVideoDuration").map(Long::parseLong)
-                .orElse(DEFAULT_MAX_VIDEO_DURATION);
         DataAccess dataAccess = new DataAccess(
                 appProperties.apply("datasource.url").get(),
                 appProperties.apply("datasource.username").get(),
                 appProperties.apply("datasource.password").get());
+        Producer producer = new Producer(youtubeAccess, dataAccess);
+        appProperties.apply("producer.delay").map(Long::parseLong).ifPresent(producer::setDelay);
+        appProperties.apply("producer.maxVideoDuration").map(Long::parseLong).ifPresent(producer::setMaxVideoDuration);
         try {
             dataAccess.init();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        while (true) {
-            Collection<Channel> channels = null;
-            try {
-                long processedUntil = System.currentTimeMillis() - DEFAULT_CHANNEL_CHECK_INTERVAL;
-                channels = dataAccess.loadChannelsForProcessing(processedUntil);
-            } catch (Exception e) {
-                log.error("Can't load channels", e);
-            }
-            if (channels != null) {
-                for (Channel channel : channels) {
-                    String channelId = channel.channelId;
-                    log.info("Process channel " + channelId);
-                    try {
-                        Long since = channel.since;
-                        long until = System.currentTimeMillis();
-                        if (since == null) {
-                            since = until - (DEFAULT_NEW_CHANNEL_GAP * 1000);
-                        }
-                        log.info("Fetch new videos from channel " + channelId +  " since " + since + " until " + until);
-                        List<String> videoIds = youtubeAccess.getNewVideoIds(channelId, since, until);
-                        if (videoIds.isEmpty()) {
-                            log.info("No new videos found on channel " + channelId);
-                        } else {
-                            log.info("Found " + videoIds.size() + " new videos on channel " + channelId);
-                            List<String> filteredVideoIds = youtubeAccess.filterVideoIds(videoIds, maxVideoDuration, "hd");
-                            if (videoIds.size() != filteredVideoIds.size()) {
-                                HashSet<String> filteredOut = new HashSet<>(videoIds);
-                                filteredOut.removeAll(filteredVideoIds);
-                                log.info(filteredOut.size() + " videos were filtered out: " + filteredOut);
-                            }
-                            dataAccess.saveVideoIds(filteredVideoIds);
-                        }
-                        dataAccess.updateChannelSince(channelId, until);
-                    } catch (Exception e) {
-                        log.error("Error for channel " + channelId, e);
-                    }
-                }
-            }
-
-            if (delay > 0) {
-                try {
-                    Thread.sleep(delay * 1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+        producer.start();
     }
 
     private static Function<String, Optional<String>> appProperties(String propertiesPath) {

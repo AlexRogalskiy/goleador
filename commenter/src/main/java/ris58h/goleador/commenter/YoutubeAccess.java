@@ -10,13 +10,13 @@ import com.google.api.services.youtube.model.CommentSnippet;
 import com.google.api.services.youtube.model.CommentThread;
 import com.google.api.services.youtube.model.CommentThreadSnippet;
 
-public class YouTubeCommenter {
+public class YoutubeAccess {
     private static final NetHttpTransport TRANSPORT = new NetHttpTransport();
     private static final JacksonFactory JSON_FACTORY = new JacksonFactory();
 
     private final YouTube youTube;
 
-    public YouTubeCommenter(String clientId, String clientSecret, String refreshToken) {
+    public YoutubeAccess(String clientId, String clientSecret, String refreshToken) {
         Credential credential = new GoogleCredential.Builder().setTransport(TRANSPORT)
                 .setJsonFactory(JSON_FACTORY)
                 .setClientSecrets(clientId, clientSecret)
