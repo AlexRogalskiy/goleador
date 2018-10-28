@@ -51,6 +51,7 @@ public class App {
                         if (since == null) {
                             since = until - (DEFAULT_NEW_CHANNEL_GAP * 1000);
                         }
+                        log.info("Fetch new videos from channel " + channelId +  " since " + since + " until " + until);
                         List<String> videoIds = youtubeAccess.getNewVideoIds(channelId, since, until);
                         if (videoIds.isEmpty()) {
                             log.info("No new videos found on channel " + channelId);
