@@ -58,7 +58,11 @@ public class App {
                         } else {
                             log.info("Found " + videoIds.size() + " new videos on channel " + channelId);
                             List<String> filteredVideoIds = youtubeAccess.filterVideoIds(videoIds, maxVideoDuration);
-                            log.info(filteredVideoIds.size() + " videos left after filtering");
+                            if (videoIds.size() != filteredVideoIds.size()) {
+                                HashSet<String> filteredOut = new HashSet<>(videoIds);
+                                filteredOut.removeAll(filteredVideoIds);
+                                log.info(filteredOut.size() + " videos were filtered out: " + filteredOut);
+                            }
                             dataAccess.saveVideoIds(filteredVideoIds);
                         }
                         dataAccess.updateChannelSince(channelId, until);
