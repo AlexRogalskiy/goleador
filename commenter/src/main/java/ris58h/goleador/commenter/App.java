@@ -75,11 +75,12 @@ public class App {
             throw new IllegalArgumentException();
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("Goals:");
+        sb.append("Голы (определено автоматически):\n");
         for (Integer time : times) {
             String timestamp = Utils.timestamp(time);
-            sb.append(' ').append(timestamp);
+            sb.append(timestamp).append('\n');
         }
+        sb.append("\n").append("Лайк, если определено верно.");
         return sb.toString();
     }
 
