@@ -48,8 +48,8 @@ public class Worker {
                     List<Integer> times = process(videoId, tempDirectory, mainProcessor);
                     long elapsedTime = System.currentTimeMillis() - timeBefore;
                     log.info("Video " + videoId + " has been processed in " + (elapsedTime / 1000) + " seconds");
+                    log.info("Times found for video " + videoId + ": " + times);
                     dataAccess.updateVideoTimes(videoId, times);
-                    log.info("Video times have been updated");
                 } catch (Exception e) {
                     log.error("Processing error for " + videoId + " video: " + e.getMessage(), e);
                     try {
