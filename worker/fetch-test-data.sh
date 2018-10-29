@@ -1,6 +1,7 @@
 #!/bin/sh
 
-format=$1
+format="136"
+if [ -n "$1" ]; then format="$1"; fi
 dir="test/video/${format}"
 
 if [ ! -d $dir ]; then
