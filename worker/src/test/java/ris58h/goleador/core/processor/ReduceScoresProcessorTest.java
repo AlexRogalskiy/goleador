@@ -64,6 +64,29 @@ class ReduceScoresProcessorTest {
         assertIterableEquals(expected, reducedScores);
     }
 
+    @Test
+    void reduceScores3() {
+        SortedMap<Integer, Score> scores = scores(Arrays.asList(
+                Score.of(0, 0),
+                Score.of(0, 0),
+                Score.of(0, 0),
+                Score.of(0, 1),
+                Score.of(0, 1),
+                Score.of(0, 1),
+                Score.of(0, 0),
+                Score.of(0, 2),
+                Score.of(0, 2),
+                Score.of(0, 2)
+        ));
+        List<ScoreFrames> reducedScores = ReduceScoresProcessor.reduceScores(scores);
+        List<ScoreFrames> expected = Arrays.asList(
+                new ScoreFrames(Score.of(0, 0), 1, 3),
+                new ScoreFrames(Score.of(0, 1), 4, 6),
+                new ScoreFrames(Score.of(0, 2), 8, 10)
+        );
+        assertIterableEquals(expected, reducedScores);
+    }
+
     @Nested
     class ScoresThatDontStartWith_0_0 {
         @Test

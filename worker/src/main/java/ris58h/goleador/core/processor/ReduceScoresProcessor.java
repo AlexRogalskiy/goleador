@@ -66,12 +66,11 @@ public class ReduceScoresProcessor implements Processor {
                     if (score.equals(prev.score)) {
                         prev.last = frame;
                     } else {
-                        int leftDiff = Math.abs(score.left - prev.score.left);
-                        int rightDiff = Math.abs(score.right - prev.score.right);
-                        int diff = leftDiff + rightDiff;
-                        if (diff < 2) {
-                            int prevCount = prev.last - prev.first + 1;
-                            if (prevCount < minSeqLength) {
+                        int prevCount = prev.last - prev.first + 1;
+                        boolean prevTooShort = prevCount < minSeqLength;
+                        if (legitScoreChange(prev.score, score)
+                                || (prevTooShort && stack.size() > 1 && legitScoreChange(stack.get(stack.size() - 2).score, score))) {
+                            if (prevTooShort) {
                                 stack.pop();
                                 if (stack.isEmpty()) {
                                     stack.push(new ScoreFrames(score, frame, frame));
@@ -99,5 +98,12 @@ public class ReduceScoresProcessor implements Processor {
             }
         }
         return stack;
+    }
+
+    private static boolean legitScoreChange(Score from, Score to) {
+        int leftDiff = to.left - from.left;
+        int rightDiff = to.right - from.right;
+        int diff = leftDiff + rightDiff;
+        return 0 == diff || diff == 1;
     }
 }
