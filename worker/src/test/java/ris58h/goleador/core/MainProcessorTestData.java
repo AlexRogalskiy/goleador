@@ -6,7 +6,7 @@ class MainProcessorTestData {
     static final Map<String, List<String>> DATA_BY_VIDEO = new TreeMap<>();
 
     static {
-        //TODO
+        //TODO monochrome threshold problem
         addTestData("-qGLWEaa47k", Arrays.asList(
                 "0-0:34:79",
                 "1-0:80:115",
@@ -25,6 +25,11 @@ class MainProcessorTestData {
                 "0-1:30:146",
                 "0-2:147:235",
                 "1-2:236:282"
+        ));
+        //TODO OCR problem: 0-1 recognized as 0-2 (105:261)
+        addTestData("C9hwnys6qXM", Arrays.asList(
+                "0-0:25:40",
+                "0-1:41:318"
         ));
         addTestData("D6hdF7gChmE", Arrays.asList(
                 "0-0:1:209",
@@ -46,7 +51,6 @@ class MainProcessorTestData {
                 "2-0:151:175",
                 "3-0:260:275"
         ));
-        //TODO
         addTestData("KyW4keXAT3s", Arrays.asList(
                 "0-0:44:218",
                 "1-0:219:245",
@@ -57,7 +61,6 @@ class MainProcessorTestData {
                 "1-0:28:102",
                 "1-1:107:242"
         ));
-        //TODO: Actual   :<1-2:104:111>
         addTestData("yE33DcpNZkw", Arrays.asList(
                 "0-0:7:16",
                 "0-1:17:60",
