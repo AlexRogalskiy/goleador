@@ -2,7 +2,7 @@ package ris58h.goleador.core;
 
 import java.util.*;
 
-class MainProcessorTestData {
+class ReducedScoresTestData {
     static final Map<String, List<String>> DATA_BY_VIDEO = new TreeMap<>();
 
     static {

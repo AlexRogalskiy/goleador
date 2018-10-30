@@ -25,7 +25,7 @@ public class MainProcessorAccuracyTest {
 
     private static double measure(MainProcessor mainProcessor) {
         ConfusionMatrix<Score> measure = new ConfusionMatrix<>();
-        for (Map.Entry<String, List<String>> entry : MainProcessorTestData.DATA_BY_VIDEO.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : ReducedScoresTestData.DATA_BY_VIDEO.entrySet()) {
             try {
                 process(entry.getKey(), entry.getValue(), measure, mainProcessor);
             } catch (Exception e) {

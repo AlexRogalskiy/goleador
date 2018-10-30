@@ -22,7 +22,7 @@ class MainProcessorIT {
 
     @TestFactory
     Stream<DynamicTest> tests() {
-        return MainProcessorTestData.DATA_BY_VIDEO.entrySet().stream()
+        return ReducedScoresTestData.DATA_BY_VIDEO.entrySet().stream()
                 .map(e -> DynamicTest.dynamicTest(e.getKey(), () -> {
                     test(e.getKey(), e.getValue());
                 }));
