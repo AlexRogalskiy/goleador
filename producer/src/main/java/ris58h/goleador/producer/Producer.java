@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,8 +12,8 @@ public class Producer {
     private static final Logger log = LoggerFactory.getLogger(Producer.class);
 
     private static final long DEFAULT_DELAY = 15;
-    private static final long DEFAULT_MAX_VIDEO_DURATION = 12*60;
-    private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 30 * 60 * 1000;
+    private static final long DEFAULT_MAX_VIDEO_DURATION = 12 * 60;
+    private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 15 * 60;
     private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
 
     private final YoutubeAccess youtubeAccess;
@@ -34,7 +33,7 @@ public class Producer {
         while (true) {
             Collection<Channel> channels = null;
             try {
-                long processedUntil = System.currentTimeMillis() - channelCheckInterval;
+                long processedUntil = System.currentTimeMillis() - (1000 * channelCheckInterval);
                 channels = dataAccess.loadChannelsForProcessing(processedUntil);
             } catch (Exception e) {
                 log.error("Can't load channels", e);
