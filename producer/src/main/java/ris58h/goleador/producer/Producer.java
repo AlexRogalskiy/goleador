@@ -11,18 +11,20 @@ import java.util.stream.Collectors;
 public class Producer {
     private static final Logger log = LoggerFactory.getLogger(Producer.class);
 
-    private static final long DEFAULT_DELAY = 15;
+    private static final long DEFAULT_CHECK_CHANNELS_DELAY = 15;
     private static final long DEFAULT_MAX_VIDEO_DURATION = 12 * 60;
     private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 15 * 60;
     private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
+    private static final long DEFAULT_DEFINITION_DELAY = 5 * 60;
 
     private final YoutubeAccess youtubeAccess;
     private final DataAccess dataAccess;
 
-    private long delay = DEFAULT_DELAY;
+    private long checkChannelsDelay = DEFAULT_CHECK_CHANNELS_DELAY;
     private long maxVideoDuration = DEFAULT_MAX_VIDEO_DURATION;
     private long channelCheckInterval = DEFAULT_CHANNEL_CHECK_INTERVAL;
     private long newChannelGap = DEFAULT_NEW_CHANNEL_GAP;
+    private long checkDefinitionDelay = DEFAULT_DEFINITION_DELAY;
 
     public Producer(YoutubeAccess youtubeAccess, DataAccess dataAccess) {
         this.youtubeAccess = youtubeAccess;
@@ -30,6 +32,11 @@ public class Producer {
     }
 
     public void start() {
+        new Thread(this::checkChannelsLoop).start();
+        new Thread(this::checkSDVideosLoop).start();
+    }
+
+    private void checkChannelsLoop() {
         while (true) {
             Collection<Channel> channels = null;
             try {
@@ -48,6 +55,18 @@ public class Producer {
                 }
             }
 
+            if (checkChannelsDelay > 0) {
+                try {
+                    Thread.sleep(checkChannelsDelay * 1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private void checkSDVideosLoop() {
+        while (true) {
             try {
                 Collection<String> sdVideoIds = dataAccess.loadSDVideoIds();
                 if (!sdVideoIds.isEmpty()) {
@@ -66,9 +85,9 @@ public class Producer {
                 log.error("Error processing SD videos", e);
             }
 
-            if (delay > 0) {
+            if (checkDefinitionDelay > 0) {
                 try {
-                    Thread.sleep(delay * 1000);
+                    Thread.sleep(checkDefinitionDelay * 1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -104,8 +123,8 @@ public class Producer {
         dataAccess.updateChannelSince(channelId, until);
     }
 
-    public void setDelay(long delay) {
-        this.delay = delay;
+    public void setCheckChannelsDelay(long checkChannelsDelay) {
+        this.checkChannelsDelay = checkChannelsDelay;
     }
 
     public void setMaxVideoDuration(long maxVideoDuration) {
@@ -118,5 +137,9 @@ public class Producer {
 
     public void setNewChannelGap(long newChannelGap) {
         this.newChannelGap = newChannelGap;
+    }
+
+    public void setCheckDefinitionDelay(long checkDefinitionDelay) {
+        this.checkDefinitionDelay = checkDefinitionDelay;
     }
 }

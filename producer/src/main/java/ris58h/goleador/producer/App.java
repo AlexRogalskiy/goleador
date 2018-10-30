@@ -16,10 +16,11 @@ public class App {
                 appProperties.apply("datasource.username").get(),
                 appProperties.apply("datasource.password").get());
         Producer producer = new Producer(youtubeAccess, dataAccess);
-        appProperties.apply("producer.delay").map(Long::parseLong).ifPresent(producer::setDelay);
+        appProperties.apply("producer.checkChannelsDelay").map(Long::parseLong).ifPresent(producer::setCheckChannelsDelay);
         appProperties.apply("producer.maxVideoDuration").map(Long::parseLong).ifPresent(producer::setMaxVideoDuration);
         appProperties.apply("producer.channelCheckInterval").map(Long::parseLong).ifPresent(producer::setChannelCheckInterval);
         appProperties.apply("producer.newChannelGap").map(Long::parseLong).ifPresent(producer::setNewChannelGap);
+        appProperties.apply("producer.checkDefinitionDelay").map(Long::parseLong).ifPresent(producer::setCheckDefinitionDelay);
         try {
             dataAccess.init();
         } catch (Exception e) {
