@@ -15,7 +15,7 @@ public class Producer {
     private static final long DEFAULT_MAX_VIDEO_DURATION = 12 * 60;
     private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 15 * 60;
     private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
-    private static final long DEFAULT_DEFINITION_DELAY = 5 * 60;
+    private static final long DEFAULT_CHECK_DEFINITION_DELAY = 5 * 60;
 
     private final YoutubeAccess youtubeAccess;
     private final DataAccess dataAccess;
@@ -24,7 +24,7 @@ public class Producer {
     private long maxVideoDuration = DEFAULT_MAX_VIDEO_DURATION;
     private long channelCheckInterval = DEFAULT_CHANNEL_CHECK_INTERVAL;
     private long newChannelGap = DEFAULT_NEW_CHANNEL_GAP;
-    private long checkDefinitionDelay = DEFAULT_DEFINITION_DELAY;
+    private long checkDefinitionDelay = DEFAULT_CHECK_DEFINITION_DELAY;
 
     public Producer(YoutubeAccess youtubeAccess, DataAccess dataAccess) {
         this.youtubeAccess = youtubeAccess;
