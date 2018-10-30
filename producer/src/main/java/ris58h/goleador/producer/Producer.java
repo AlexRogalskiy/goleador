@@ -32,6 +32,7 @@ public class Producer {
     }
 
     public void start() {
+        log.info("Start Producer");
         new Thread(this::checkChannelsLoop).start();
         new Thread(this::checkSDVideosLoop).start();
     }

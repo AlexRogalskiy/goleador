@@ -21,6 +21,11 @@ public class Commenter {
     }
 
     public void start() {
+        log.info("Start Commenter");
+        new Thread(this::commenterLoop).start();
+    }
+
+    private void commenterLoop() {
         while (true) {
             try {
                 dataAccess.processUncommentedVideos(videoTimes -> {

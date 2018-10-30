@@ -32,6 +32,11 @@ public class Worker {
     }
 
     public void start() {
+        log.info("Start Worker");
+        new Thread(this::workerLoop).start();
+    }
+
+    private void workerLoop() {
         while (true) {
             String videoId = null;
             try {
