@@ -73,7 +73,7 @@ public class Commenter {
             String timestamp = Utils.timestamp(time);
             sb.append(timestamp).append('\n');
         }
-        sb.append("\n").append("Лайк, если определено верно.");
+        sb.append("\n").append("Лайк, если определено верно. Дислайк, если всё плохо.");
         return sb.toString();
     }
 
