@@ -55,12 +55,13 @@ public class DataAccess {
 
     public void saveVideos(List<Video> videos) throws Exception {
         try (Connection connection = getConnection()) {
-            try (PreparedStatement ps = connection.prepareStatement(" INSERT INTO video (video_id, definition) " +
-                    " VALUES (?, ?) " +
+            try (PreparedStatement ps = connection.prepareStatement(" INSERT INTO video (video_id, definition, published_at) " +
+                    " VALUES (?, ?, ?) " +
                     " ON CONFLICT DO NOTHING")) {
                 for (Video video : videos) {
                     ps.setString(1, video.id);
                     ps.setString(2, video.definition);
+                    ps.setLong(3, video.publishedAt);
                     ps.addBatch();
                 }
                 ps.executeBatch();
@@ -82,13 +83,14 @@ public class DataAccess {
         }
     }
 
-    public Collection<String> loadSDVideoIds() throws Exception {
+    public Collection<String> loadSDVideoIds(long publishedAfter) throws Exception {
         try (
                 Connection connection = getConnection();
                 PreparedStatement ps = connection.prepareStatement(" SELECT video_id " +
                         " FROM video " +
-                        " WHERE definition = 'sd' ");
+                        " WHERE definition = 'sd' AND published_at > ?");
         ) {
+            ps.setLong(1, publishedAfter);
             try (ResultSet rs = ps.executeQuery()) {
                 Collection<String> result = new ArrayList<>();
                 while (rs.next()) {

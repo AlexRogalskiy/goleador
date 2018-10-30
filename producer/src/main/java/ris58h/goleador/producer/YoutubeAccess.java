@@ -29,7 +29,7 @@ public class YoutubeAccess {
         this.key = key;
     }
 
-    public List<String> getVideoIds(String channelId, long after, long before) throws Exception {
+    public List<String> getVideoIds(String channelId, long publishedAfter, long publishedBefore) throws Exception {
         List<String> result = new ArrayList<>();
         String pageToken = null;
         do {
@@ -38,8 +38,8 @@ public class YoutubeAccess {
                     .setChannelId(channelId)
                     .setFields("items(id(videoId)),nextPageToken")
                     .setOrder("date")
-                    .setPublishedAfter(new DateTime(after))
-                    .setPublishedBefore(new DateTime(before))
+                    .setPublishedAfter(new DateTime(publishedAfter))
+                    .setPublishedBefore(new DateTime(publishedBefore))
                     .setMaxResults(MAX_RESULTS)
                     .setKey(key);
 
@@ -58,9 +58,9 @@ public class YoutubeAccess {
     }
 
     public List<Video> getVideos(Collection<String> videoIds) throws Exception {
-        YouTube.Videos.List list = youTube.videos().list("id,contentDetails")
+        YouTube.Videos.List list = youTube.videos().list("id,snippet,contentDetails")
                 .setId(String.join(",", videoIds))
-                .setFields("items(id,contentDetails(duration,definition))")
+                .setFields("items(id,snippet(publishedAt),contentDetails(duration,definition))")
                 .setKey(key);
         VideoListResponse videoListResponse = list.execute();
         List<com.google.api.services.youtube.model.Video> items = videoListResponse.getItems();
@@ -68,7 +68,8 @@ public class YoutubeAccess {
                 .map(video -> new Video(
                         video.getId(),
                         parseDuration(video.getContentDetails().getDuration()),
-                        video.getContentDetails().getDefinition()
+                        video.getContentDetails().getDefinition(),
+                        parseDateTime(video.getSnippet().getPublishedAt())
                 ))
                 .collect(Collectors.toList());
     }
@@ -76,5 +77,9 @@ public class YoutubeAccess {
     private static long parseDuration(String durationString) {
         Duration duration = Duration.parse(durationString);
         return duration.getSeconds();
+    }
+
+    private static long parseDateTime(DateTime dateTime) {
+        return dateTime.getValue();
     }
 }

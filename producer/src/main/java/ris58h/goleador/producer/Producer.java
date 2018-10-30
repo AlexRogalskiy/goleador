@@ -16,6 +16,7 @@ public class Producer {
     private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 15 * 60;
     private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
     private static final long DEFAULT_CHECK_DEFINITION_DELAY = 5 * 60;
+    private static final long DEFAULT_DEFINITION_GAP = 60 * 60;
 
     private final YoutubeAccess youtubeAccess;
     private final DataAccess dataAccess;
@@ -25,6 +26,7 @@ public class Producer {
     private long channelCheckInterval = DEFAULT_CHANNEL_CHECK_INTERVAL;
     private long newChannelGap = DEFAULT_NEW_CHANNEL_GAP;
     private long checkDefinitionDelay = DEFAULT_CHECK_DEFINITION_DELAY;
+    private long definitionGap = DEFAULT_DEFINITION_GAP;
 
     public Producer(YoutubeAccess youtubeAccess, DataAccess dataAccess) {
         this.youtubeAccess = youtubeAccess;
@@ -66,36 +68,6 @@ public class Producer {
         }
     }
 
-    private void checkSDVideosLoop() {
-        while (true) {
-            try {
-                Collection<String> sdVideoIds = dataAccess.loadSDVideoIds();
-                if (!sdVideoIds.isEmpty()) {
-                    log.info("Found " + sdVideoIds.size() + " SD videos: " + sdVideoIds);
-                    List<Video> videos = youtubeAccess.getVideos(sdVideoIds);
-                    List<String> hdVideoIds = videos.stream()
-                            .filter(video -> video.definition.equals("hd"))
-                            .map(video -> video.id)
-                            .collect(Collectors.toList());
-                    if (!hdVideoIds.isEmpty()) {
-                        log.info(hdVideoIds.size() + " SD videos became HD: " + hdVideoIds);
-                        dataAccess.updateToHD(hdVideoIds);
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Error processing SD videos", e);
-            }
-
-            if (checkDefinitionDelay > 0) {
-                try {
-                    Thread.sleep(checkDefinitionDelay * 1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
     private void processChannel(Channel channel) throws Exception {
         String channelId = channel.channelId;
         log.info("Process channel " + channelId);
@@ -124,6 +96,37 @@ public class Producer {
         dataAccess.updateChannelSince(channelId, until);
     }
 
+    private void checkSDVideosLoop() {
+        while (true) {
+            try {
+                long publishedAfter = System.currentTimeMillis() - (definitionGap * 1000);
+                Collection<String> sdVideoIds = dataAccess.loadSDVideoIds(publishedAfter);
+                if (!sdVideoIds.isEmpty()) {
+                    log.info("Found " + sdVideoIds.size() + " SD videos: " + sdVideoIds);
+                    List<Video> videos = youtubeAccess.getVideos(sdVideoIds); //TODO: load id & definition only
+                    List<String> hdVideoIds = videos.stream()
+                            .filter(video -> video.definition.equals("hd"))
+                            .map(video -> video.id)
+                            .collect(Collectors.toList());
+                    if (!hdVideoIds.isEmpty()) {
+                        log.info(hdVideoIds.size() + " SD videos became HD: " + hdVideoIds);
+                        dataAccess.updateToHD(hdVideoIds);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error processing SD videos", e);
+            }
+
+            if (checkDefinitionDelay > 0) {
+                try {
+                    Thread.sleep(checkDefinitionDelay * 1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
     public void setCheckChannelsDelay(long checkChannelsDelay) {
         this.checkChannelsDelay = checkChannelsDelay;
     }
@@ -142,5 +145,9 @@ public class Producer {
 
     public void setCheckDefinitionDelay(long checkDefinitionDelay) {
         this.checkDefinitionDelay = checkDefinitionDelay;
+    }
+
+    public void setDefinitionGap(long definitionGap) {
+        this.definitionGap = definitionGap;
     }
 }

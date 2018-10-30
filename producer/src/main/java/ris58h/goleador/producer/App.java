@@ -21,6 +21,7 @@ public class App {
         appProperties.apply("producer.channelCheckInterval").map(Long::parseLong).ifPresent(producer::setChannelCheckInterval);
         appProperties.apply("producer.newChannelGap").map(Long::parseLong).ifPresent(producer::setNewChannelGap);
         appProperties.apply("producer.checkDefinitionDelay").map(Long::parseLong).ifPresent(producer::setCheckDefinitionDelay);
+        appProperties.apply("producer.definitionGap").map(Long::parseLong).ifPresent(producer::setDefinitionGap);
         try {
             dataAccess.init();
         } catch (Exception e) {
