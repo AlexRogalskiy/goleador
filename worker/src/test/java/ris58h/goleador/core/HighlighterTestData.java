@@ -52,6 +52,13 @@ class HighlighterTestData {
                 new ExpectedTime(375, 378),
                 new ExpectedTime(461, 465)
         ));
+
+        // Just a warning about unused data
+        if (ReducedScoresTestData.DATA_BY_VIDEO.size() != DATA_BY_VIDEO.size()) {
+            HashSet<String> videoIds = new HashSet<>(ReducedScoresTestData.DATA_BY_VIDEO.keySet());
+            videoIds.removeAll(DATA_BY_VIDEO.keySet());
+            System.out.println("WARNING: some videos are unused " + videoIds);
+        }
     }
 
     private static void addTestData(String videoId, List<ExpectedTime> expectedTimes) {
