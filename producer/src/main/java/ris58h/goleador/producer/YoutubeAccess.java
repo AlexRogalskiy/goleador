@@ -6,14 +6,13 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
-import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class YoutubeAccess {
     private static final long MAX_RESULTS = 50L;
@@ -30,7 +29,7 @@ public class YoutubeAccess {
         this.key = key;
     }
 
-    public List<String> getNewVideoIds(String channelId, long after, long before) throws Exception {
+    public List<String> getVideoIds(String channelId, long after, long before) throws Exception {
         List<String> result = new ArrayList<>();
         String pageToken = null;
         do {
@@ -58,35 +57,20 @@ public class YoutubeAccess {
         return result;
     }
 
-    public List<String> filterVideoIds(List<String> videoIds,
-                                       Long maxDuration,
-                                       String definition) throws Exception {
-        String part = "id";
-        if (maxDuration != null && definition != null) {
-            part += ",contentDetails";
-        }
-        String fields = "items(id";
-        if (maxDuration != null) {
-            fields += ",contentDetails/duration";
-        }
-        if (definition != null) {
-            fields += ",contentDetails/definition";
-        }
-        fields += ")";
-        YouTube.Videos.List list = youTube.videos().list(part)
+    public List<Video> getVideos(Collection<String> videoIds) throws Exception {
+        YouTube.Videos.List list = youTube.videos().list("id,contentDetails")
                 .setId(String.join(",", videoIds))
-                .setFields(fields)
+                .setFields("items(id,contentDetails(duration,definition))")
                 .setKey(key);
         VideoListResponse videoListResponse = list.execute();
-        List<Video> items = videoListResponse.getItems();
-        Stream<Video> stream = items.stream();
-        if (maxDuration != null) {
-            stream = stream.filter(video -> parseDuration(video.getContentDetails().getDuration()) <= maxDuration);
-        }
-        if (definition != null) {
-            stream = stream.filter(video -> definition.equals(video.getContentDetails().getDefinition()));
-        }
-        return stream.map(Video::getId).collect(Collectors.toList());
+        List<com.google.api.services.youtube.model.Video> items = videoListResponse.getItems();
+        return items.stream()
+                .map(video -> new Video(
+                        video.getId(),
+                        parseDuration(video.getContentDetails().getDuration()),
+                        video.getContentDetails().getDefinition()
+                ))
+                .collect(Collectors.toList());
     }
 
     private static long parseDuration(String durationString) {

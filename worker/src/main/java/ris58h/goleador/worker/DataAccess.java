@@ -34,7 +34,7 @@ public class DataAccess {
                 Statement statement = connection.createStatement();
                 ResultSet rs = statement.executeQuery(" SELECT video_id " +
                         " FROM video " +
-                        " WHERE times IS NULL AND error IS NULL " +
+                        " WHERE times IS NULL AND error IS NULL AND definition = 'hd' " +
                         " LIMIT 1 ");
         ) {
             String videoId = rs.next() ? rs.getString(1) : null;

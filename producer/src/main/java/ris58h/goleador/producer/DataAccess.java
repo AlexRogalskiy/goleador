@@ -6,6 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DataAccess {
     private final String jdbcUrl;
@@ -52,12 +53,14 @@ public class DataAccess {
         }
     }
 
-    public void saveVideoIds(List<String> videoIds) throws Exception {
+    public void saveVideos(List<Video> videos) throws Exception {
         try (Connection connection = getConnection()) {
-            try (PreparedStatement ps = connection.prepareStatement(" INSERT INTO video (video_id) VALUES (?) " +
+            try (PreparedStatement ps = connection.prepareStatement(" INSERT INTO video (video_id, definition) " +
+                    " VALUES (?, ?) " +
                     " ON CONFLICT DO NOTHING")) {
-                for (String videoId : videoIds) {
-                    ps.setString(1, videoId);
+                for (Video video : videos) {
+                    ps.setString(1, video.id);
+                    ps.setString(2, video.definition);
                     ps.addBatch();
                 }
                 ps.executeBatch();
@@ -76,6 +79,41 @@ public class DataAccess {
             ps.setLong(1, since);
             ps.setString(2, channelId);
             ps.executeUpdate();
+        }
+    }
+
+    public Collection<String> loadSDVideoIds() throws Exception {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(" SELECT video_id " +
+                        " FROM video " +
+                        " WHERE definition = 'sd' ");
+        ) {
+            try (ResultSet rs = ps.executeQuery()) {
+                Collection<String> result = new ArrayList<>();
+                while (rs.next()) {
+                    String videoId = rs.getString(1);
+                    result.add(videoId);
+                }
+                return result;
+            }
+        }
+    }
+
+    public void updateToHD(List<String> videoIds) throws Exception {
+        try (Connection connection = getConnection()) {
+            String qMarks = videoIds.stream().map(v -> "?").collect(Collectors.joining(","));
+            String inPart = '(' + qMarks + ')';
+            try (PreparedStatement ps = connection.prepareStatement(" UPDATE video " +
+                    " SET definition = 'hd' " +
+                    " WHERE video_id IN " + inPart)) {
+                int i = 1;
+                for (String videoId : videoIds) {
+                    ps.setString(i, videoId);
+                    i++;
+                }
+                ps.execute();
+            }
         }
     }
 }
