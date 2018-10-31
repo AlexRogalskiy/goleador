@@ -60,18 +60,23 @@ public class YoutubeAccess {
     public List<Video> getVideos(Collection<String> videoIds) throws Exception {
         YouTube.Videos.List list = youTube.videos().list("id,snippet,contentDetails")
                 .setId(String.join(",", videoIds))
-                .setFields("items(id,snippet(publishedAt),contentDetails(duration,definition))")
+                .setFields("items(id,snippet(publishedAt,title),contentDetails(duration,definition))")
                 .setKey(key);
         VideoListResponse videoListResponse = list.execute();
         List<com.google.api.services.youtube.model.Video> items = videoListResponse.getItems();
         return items.stream()
-                .map(video -> new Video(
-                        video.getId(),
-                        parseDuration(video.getContentDetails().getDuration()),
-                        video.getContentDetails().getDefinition(),
-                        parseDateTime(video.getSnippet().getPublishedAt())
-                ))
+                .map(YoutubeAccess::toVideo)
                 .collect(Collectors.toList());
+    }
+
+    private static Video toVideo(com.google.api.services.youtube.model.Video video) {
+        Video result = new Video();
+        result.id = video.getId();
+        result.duration = parseDuration(video.getContentDetails().getDuration());
+        result.definition = video.getContentDetails().getDefinition();
+        result.publishedAt = parseDateTime(video.getSnippet().getPublishedAt());
+        result.title = video.getSnippet().getTitle();
+        return result;
     }
 
     private static long parseDuration(String durationString) {

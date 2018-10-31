@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,15 +86,32 @@ public class Producer {
             List<Video> videos = youtubeAccess.getVideos(videoIds);
             List<Video> filteredVideos = new ArrayList<>();
             for (Video video : videos) {
-                if (video.duration >= maxVideoDuration) {
-                    log.info("Skip video " + video.id + " because it's too long: " + video.duration);
-                } else {
+                String reason = filterOut(video);
+                if (reason == null) {
                     filteredVideos.add(video);
+                } else {
+                    log.info("Filter out " + video.id + ": " + reason);
                 }
+            }
+            if (filteredVideos.size() < videos.size()) {
+                log.info(filteredVideos.size() + " videos left after filtering");
             }
             dataAccess.saveVideos(filteredVideos);
         }
         dataAccess.updateChannelSince(channelId, until);
+    }
+
+    private String filterOut(Video video) {
+        if (video.duration > maxVideoDuration) {
+            return "too long (" + video.duration + " > " + maxVideoDuration + ")";
+        }
+        String lcTitle = video.title.toLowerCase();
+        for (String bannedWord : Arrays.asList("против", "лучшие", "-го тура")) {
+            if (lcTitle.contains(bannedWord)) {
+                return "title contains '" + bannedWord + "'";
+            }
+        }
+        return null;
     }
 
     private void checkSDVideosLoop() {
