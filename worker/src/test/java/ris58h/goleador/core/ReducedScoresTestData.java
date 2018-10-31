@@ -88,6 +88,13 @@ class ReducedScoresTestData {
                 "1-1:249:324",
                 "1-1:327:366"
         ));
+        //TODO static pixels recognition problem: video is too short
+        addTestData("PKzvJgRx1Zw", Arrays.asList(
+                "0-0:6:19",
+                "0-1:20:39",
+                "0-0:40:51",
+                "1:1:74:81"
+        ));
         addTestData("QYlSNDwrq40", Arrays.asList(
                 "0-0:1:23",
                 "1-0:28:78",
