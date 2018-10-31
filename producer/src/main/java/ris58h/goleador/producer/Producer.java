@@ -82,7 +82,7 @@ public class Producer {
         if (videoIds.isEmpty()) {
             log.info("No new videos found on channel " + channelId);
         } else {
-            log.info("Found " + videoIds.size() + " new videos on channel " + channelId);
+            log.info("Found " + videoIds.size() + " new videos on channel " + channelId + ": " + videoIds);
             List<Video> videos = youtubeAccess.getVideos(videoIds);
             List<Video> filteredVideos = new ArrayList<>();
             for (Video video : videos) {
@@ -93,10 +93,15 @@ public class Producer {
                     log.info("Filter out " + video.id + ": " + reason);
                 }
             }
-            if (filteredVideos.size() < videos.size()) {
-                log.info(filteredVideos.size() + " videos left after filtering");
+            if (filteredVideos.isEmpty()) {
+                log.info("No videos left after filtering");
+            } else {
+                if (filteredVideos.size() != videos.size()) {
+                    List<String> filteredVideoIds = filteredVideos.stream().map(v -> v.id).collect(Collectors.toList());
+                    log.info(filteredVideos.size() + " videos left after filtering: " + filteredVideoIds);
+                }
+                dataAccess.saveVideos(filteredVideos);
             }
-            dataAccess.saveVideos(filteredVideos);
         }
         dataAccess.updateChannelSince(channelId, until);
     }
