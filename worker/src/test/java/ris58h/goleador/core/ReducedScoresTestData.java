@@ -93,7 +93,7 @@ class ReducedScoresTestData {
                 "0-0:6:19",
                 "0-1:20:39",
                 "0-0:40:51",
-                "1:1:74:81"
+                "1-1:74:81"
         ));
         addTestData("QYlSNDwrq40", Arrays.asList(
                 "0-0:1:23",
