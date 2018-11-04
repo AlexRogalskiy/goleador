@@ -48,56 +48,56 @@ public class StaticProcessor implements Processor {
         int width = -1;
         int height = -1;
         System.out.println("Building intensity matrix");
+        List<Path> sortedPaths = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
-            List<Path> sortedPaths = new ArrayList<>();
             for (Path path : stream) {
                 sortedPaths.add(path);
             }
-            sortedPaths.sort(Comparator.comparing(Path::toString));
-            for (Path path : sortedPaths) {
-                ImageProcessor ip = readImage(path.toFile());
-                int imageWidth = ip.getWidth();
-                int imageHeight = ip.getHeight();
-                if (intensityMatrix == null) {
-                    intensityMatrix = new IntMatrix(imageWidth, imageHeight);
-                    colorMatrix = new IntMatrix(imageWidth, imageHeight);
-                    width = imageWidth;
-                    height = imageHeight;
-                } else {
-                    if (imageWidth != width || imageHeight != height) {
-                        throw new RuntimeException();
-                    }
+        }
+        sortedPaths.sort(Comparator.comparing(Path::toString));
+        for (Path path : sortedPaths) {
+            ImageProcessor ip = readImage(path.toFile());
+            int imageWidth = ip.getWidth();
+            int imageHeight = ip.getHeight();
+            if (intensityMatrix == null) {
+                intensityMatrix = new IntMatrix(imageWidth, imageHeight);
+                colorMatrix = new IntMatrix(imageWidth, imageHeight);
+                width = imageWidth;
+                height = imageHeight;
+            } else {
+                if (imageWidth != width || imageHeight != height) {
+                    throw new RuntimeException();
                 }
-                batch.add(ip);
-                if (batch.size() == batchSize) {
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x++) {
-                            int index = y * width + x;
-                            int sum = 0;
-                            int i = 0;
-                            for (ImageProcessor batchItem : batch) {
-                                int batchItemColor = batchItem.get(x, y);
-                                batchColors[i] = batchItemColor;
-                                sum += batchItemColor;
-                                i++;
-                            }
-                            int avgColor = sum / batchSize;
-                            boolean sameColor = true;
-                            for (int batchColor : batchColors) {
-                                int absDelta = Math.abs(avgColor - batchColor);
-                                if (absDelta > maxBatchColorDeviation) {
-                                    sameColor = false;
-                                    break;
-                                }
-                            }
-                            if (sameColor) {
-                                intensityMatrix.buffer[index] += 1;
-                                colorMatrix.buffer[index] += avgColor;
+            }
+            batch.add(ip);
+            if (batch.size() == batchSize) {
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        int index = y * width + x;
+                        int sum = 0;
+                        int i = 0;
+                        for (ImageProcessor batchItem : batch) {
+                            int batchItemColor = batchItem.get(x, y);
+                            batchColors[i] = batchItemColor;
+                            sum += batchItemColor;
+                            i++;
+                        }
+                        int avgColor = sum / batchSize;
+                        boolean sameColor = true;
+                        for (int batchColor : batchColors) {
+                            int absDelta = Math.abs(avgColor - batchColor);
+                            if (absDelta > maxBatchColorDeviation) {
+                                sameColor = false;
+                                break;
                             }
                         }
+                        if (sameColor) {
+                            intensityMatrix.buffer[index] += 1;
+                            colorMatrix.buffer[index] += avgColor;
+                        }
                     }
-                    batch.clear();
                 }
+                batch.clear();
             }
         }
 
@@ -117,7 +117,7 @@ public class StaticProcessor implements Processor {
                 if (intensity > intensityThreshold) {
                     int sumColor = colorMatrix.buffer[index];
                     int color = sumColor / intensity;
-                    staticGray.set(x, y, (color<<16)+(color<<8)+color);
+                    staticGray.set(x, y, (color << 16) + (color << 8) + color);
                     if (color > 127) {
                         staticWhite.set(x, y, COLOR_WHITE);
                     } else {
