@@ -20,6 +20,7 @@ for video_id in \
     "PKzvJgRx1Zw" \
     "QYlSNDwrq40" \
     "yE33DcpNZkw" \
+    "Xf5z_awHVKw" \
     "ZdFEZlepWJI" \
     ; do
     youtube-dl -f $format "https://www.youtube.com/watch?v=${video_id}" -o "${dir}/%(id)s.%(ext)s"
