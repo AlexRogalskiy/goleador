@@ -25,6 +25,33 @@ class MainProcessorIT {
         mainProcessor.dispose();
     }
 
+    //TODO monochrome threshold problem
+    @Test
+    void test__qGLWEaa47k() throws Exception {
+        test("-qGLWEaa47k");
+    }
+
+    @Test
+    void test_5VMS71fitI4() throws Exception {
+        test("5VMS71fitI4");
+    }
+
+    @Test
+    void test_cLjn6oF1E9Q() throws Exception {
+        test("cLjn6oF1E9Q");
+    }
+
+    //TODO OCR problem: 0-1 recognized as 0-2 (105:261)
+    @Test
+    void test_C9hwnys6qXM() throws Exception {
+        test("C9hwnys6qXM");
+    }
+
+    @Test
+    void test_D6hdF7gChmE() throws Exception {
+        test("D6hdF7gChmE");
+    }
+    
     @Test
     void test_fM7TtiC_j_w() throws Exception {
         test("fM7TtiC-j_w");
