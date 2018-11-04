@@ -71,6 +71,11 @@ class ReducedScoresTestData {
                 "2-1:367:377",
                 "2-2:400:410"
         ));
+        addTestData("XL1kNQ_HRAE", Arrays.asList(
+                "0-0:46:135",
+                "1-0:141:172",
+                "1-0:199:306"
+        ));
         addTestData("ZdFEZlepWJI", Arrays.asList(
                 "0-0:1:70",
                 "0-0:77:108",
