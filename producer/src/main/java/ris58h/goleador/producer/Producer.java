@@ -20,7 +20,8 @@ public class Producer {
             "против",
             "лучшие",
             "-го тура",
-            "программа"
+            "программа",
+            "выпуск"
     ));
 
     private final YoutubeAccess youtubeAccess;
