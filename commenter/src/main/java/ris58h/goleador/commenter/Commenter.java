@@ -1,9 +1,13 @@
 package ris58h.goleador.commenter;
 
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Commenter {
     private static final Logger log = LoggerFactory.getLogger(Commenter.class);
@@ -26,6 +30,10 @@ public class Commenter {
     }
 
     private void commenterLoop() {
+        RetryPolicy commentRetryPolicy = new RetryPolicy()
+                .retryOn(UnknownHostException.class)
+                .withDelay(5, TimeUnit.SECONDS)
+                .withMaxRetries(2);
         while (true) {
             try {
                 dataAccess.processUncommentedVideos(videoTimes -> {
@@ -33,7 +41,8 @@ public class Commenter {
                     log.info("Process uncommented video " + videoId);
                     try {
                         String commentText = commentText(videoTimes.times);
-                        String commentId = youtubeAccess.comment(videoId, commentText);
+                        String commentId = Failsafe.with(commentRetryPolicy)
+                                .get(() -> youtubeAccess.comment(videoId, commentText));
                         dataAccess.updateCommentId(videoId, commentId);
                         log.info("Video " + videoId + " has been commented: commentId=" + commentId);
                     } catch (Exception e) {
