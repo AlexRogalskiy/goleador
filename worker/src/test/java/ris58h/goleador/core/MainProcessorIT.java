@@ -2,30 +2,79 @@ package ris58h.goleador.core;
 
 import org.junit.jupiter.api.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Disabled
 class MainProcessorIT {
-    static MainProcessor mainProcessor = new MainProcessor();
+    private static MainProcessor mainProcessor = new MainProcessor();
+    private static HashSet<String> videos = new HashSet<>();
 
     @BeforeAll
     static void beforeAll() throws Exception {
         mainProcessor.init();
+        videos.addAll(ReducedScoresTestData.DATA_BY_VIDEO.keySet());
     }
 
     @AfterAll
     static void afterAll() throws Exception {
+        if (!videos.isEmpty()) {
+            System.out.println("WARNING: some videos are unused " + videos);
+        }
         mainProcessor.dispose();
     }
 
-    @TestFactory
-    Stream<DynamicTest> tests() {
-        return ReducedScoresTestData.DATA_BY_VIDEO.entrySet().stream()
-                .map(e -> DynamicTest.dynamicTest(e.getKey(), () -> {
-                    test(e.getKey(), e.getValue());
-                }));
+    @Test
+    void test_fM7TtiC_j_w() throws Exception {
+        test("fM7TtiC-j_w");
+    }
+
+    @Test
+    void test_gLQf3Zp2n6g() throws Exception {
+        test("gLQf3Zp2n6g");
+    }
+
+    @Test
+    void test_KyW4keXAT3s() throws Exception {
+        test("KyW4keXAT3s");
+    }
+
+    //TODO static pixels recognition problem: video is too short
+    @Test
+    void test_PKzvJgRx1Zw() throws Exception {
+        test("PKzvJgRx1Zw");
+    }
+
+    @Test
+    void test_QYlSNDwrq40() throws Exception {
+        test("QYlSNDwrq40");
+    }
+
+    @Test
+    void test_yE33DcpNZkw() throws Exception {
+        test("yE33DcpNZkw");
+    }
+
+    @Test
+    void test_Xf5z_awHVKw() throws Exception {
+        test("Xf5z_awHVKw");
+    }
+
+    @Test
+    void test_XL1kNQ_HRAE() throws Exception {
+        test("XL1kNQ_HRAE");
+    }
+
+    @Test
+    void test_ZdFEZlepWJI() throws Exception {
+        test("ZdFEZlepWJI");
+    }
+
+    private void test(String videoId) throws Exception {
+        List<String> expectedLines = ReducedScoresTestData.DATA_BY_VIDEO.get(videoId);
+        videos.remove(videoId);
+        test(videoId, expectedLines);
     }
 
     private void test(String videoId, List<String> expectedLines) throws Exception {
