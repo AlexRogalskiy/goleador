@@ -3,10 +3,7 @@ package ris58h.goleador.producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Producer {
@@ -18,6 +15,13 @@ public class Producer {
     private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
     private static final long DEFAULT_CHECK_DEFINITION_DELAY = 5 * 60;
     private static final long DEFAULT_DEFINITION_GAP = 60 * 60;
+
+    private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
+            "против",
+            "лучшие",
+            "-го тура",
+            "программа"
+    ));
 
     private final YoutubeAccess youtubeAccess;
     private final DataAccess dataAccess;
@@ -111,7 +115,7 @@ public class Producer {
             return "too long (" + video.duration + " > " + maxVideoDuration + ")";
         }
         String lcTitle = video.title.toLowerCase();
-        for (String bannedWord : Arrays.asList("против", "лучшие", "-го тура")) {
+        for (String bannedWord : STOP_WORDS) {
             if (lcTitle.contains(bannedWord)) {
                 return "title contains '" + bannedWord + "'";
             }
