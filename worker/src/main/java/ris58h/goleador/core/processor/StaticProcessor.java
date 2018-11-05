@@ -27,14 +27,16 @@ public class StaticProcessor implements Processor {
     private static final int STATIC_GRAY_BACKGROUND = 111666777;
 
     private int batchSize = 5;
-    private int maxBatchColorDeviation = 10;
+    private int maxBatchColorDeviation = 9;
     private int morphNum = 7;
+    private int skipFirst = 5;
 
     @Override
     public void init(Parameters parameters) throws Exception {
         parameters.apply("batchSize").ifPresent(value -> batchSize = Integer.parseInt(value));
         parameters.apply("maxBatchColorDeviation").ifPresent(value -> maxBatchColorDeviation = Integer.parseInt(value));
         parameters.apply("morphNum").ifPresent(value -> morphNum = Integer.parseInt(value));
+        parameters.apply("skipFirst").ifPresent(value -> skipFirst = Integer.parseInt(value));
     }
 
     @Override
@@ -47,6 +49,7 @@ public class StaticProcessor implements Processor {
         int[] batchColors = new int[batchSize];
         int width = -1;
         int height = -1;
+        int frameNumber = 0;
         System.out.println("Building intensity matrix");
         List<Path> sortedPaths = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, inGlob)) {
@@ -56,6 +59,10 @@ public class StaticProcessor implements Processor {
         }
         sortedPaths.sort(Comparator.comparing(Path::toString));
         for (Path path : sortedPaths) {
+            frameNumber++;
+            if (frameNumber <= skipFirst) {
+                continue;
+            }
             ImageProcessor ip = readImage(path.toFile());
             int imageWidth = ip.getWidth();
             int imageHeight = ip.getHeight();
