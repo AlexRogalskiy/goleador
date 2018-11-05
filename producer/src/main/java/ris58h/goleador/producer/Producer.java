@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Producer {
@@ -16,13 +17,14 @@ public class Producer {
     private static final long DEFAULT_CHECK_DEFINITION_DELAY = 5 * 60;
     private static final long DEFAULT_DEFINITION_GAP = 60 * 60;
 
+    private static final Pattern SPLIT_TO_WORDS_PATTERN = Pattern.compile("\\W+");
     private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
-            "против",
-            "лучшие",
-            "-го тура",
-            "программа",
             "выпуск",
-            "выступления"
+            "выступления",
+            "лучшие",
+            "программа",
+            "против",
+            "тура"
     ));
 
     private final YoutubeAccess youtubeAccess;
@@ -114,9 +116,10 @@ public class Producer {
             return "too long (" + video.duration + " > " + maxVideoDuration + ")";
         }
         String lcTitle = video.title.toLowerCase();
-        for (String bannedWord : STOP_WORDS) {
-            if (lcTitle.contains(bannedWord)) {
-                return "title contains '" + bannedWord + "'";
+        for (Iterator<String> iterator = SPLIT_TO_WORDS_PATTERN.splitAsStream(lcTitle).iterator(); iterator.hasNext();) {
+            String word = iterator.next();
+            if (STOP_WORDS.contains(word)) {
+                return "title contains '" + word + "'";
             }
         }
         return null;
