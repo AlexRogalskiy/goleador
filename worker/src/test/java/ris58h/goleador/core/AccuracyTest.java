@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class AccuracyTest {
     static void runFor(List<List<?>> parameterLists, Function<List<?>, Comparable> testFunction) {
@@ -20,9 +21,13 @@ public class AccuracyTest {
         List<Result> results = new ArrayList<>();
         for (List<?> params : cartesianProduct) {
             try {
+                String paramsString = String.join(", ",
+                        params.stream().map(Object::toString).collect(Collectors.toList()));
+                System.out.println("Run for params: " + paramsString);
                 long before = System.currentTimeMillis();
                 Comparable result = testFunction.apply(params);
                 long testTimeMills = System.currentTimeMillis() - before;
+                System.out.println("Run ended in " + (testTimeMills / 1000) + " seconds with result " + result);
                 results.add(new Result(result, params, testTimeMills));
             } catch (Exception e) {
                 e.printStackTrace();
