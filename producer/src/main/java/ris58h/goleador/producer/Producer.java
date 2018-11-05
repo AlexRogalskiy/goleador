@@ -76,17 +76,14 @@ public class Producer {
 
     private void processChannel(Channel channel) throws Exception {
         String channelId = channel.channelId;
-        log.info("Process channel " + channelId);
         Long since = channel.since;
         long until = System.currentTimeMillis();
         if (since == null) {
             since = until - (newChannelGap * 1000);
         }
-        log.info("Fetch new videos from channel " + channelId +  " since " + since + " until " + until);
+        log.info("Check for new videos on channel " + channelId +  " since " + since + " until " + until);
         List<String> videoIds = youtubeAccess.getVideoIds(channelId, since, until);
-        if (videoIds.isEmpty()) {
-            log.info("No new videos found on channel " + channelId);
-        } else {
+        if (!videoIds.isEmpty()) {
             log.info("Found " + videoIds.size() + " new videos on channel " + channelId + ": " + videoIds);
             List<Video> videos = youtubeAccess.getVideos(videoIds);
             List<Video> filteredVideos = new ArrayList<>();
