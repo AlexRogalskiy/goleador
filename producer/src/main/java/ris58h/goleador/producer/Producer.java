@@ -21,7 +21,8 @@ public class Producer {
             "лучшие",
             "-го тура",
             "программа",
-            "выпуск"
+            "выпуск",
+            "выступления"
     ));
 
     private final YoutubeAccess youtubeAccess;
