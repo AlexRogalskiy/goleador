@@ -2,21 +2,11 @@ version: '2'
 services:
   db:
     image: goleador-db
-  producer:
-    image: goleador-producer
+  main:
+    image: goleador-main
     depends_on:
     - db
-    environment:
-    - DATASOURCE_URL=jdbc:postgresql://db:5432/goleador
   worker:
     image: goleador-worker
     depends_on:
     - db
-    environment:
-    - DATASOURCE_URL=jdbc:postgresql://db:5432/goleador
-  commenter:
-    image: goleador-commenter
-    depends_on:
-    - db
-    environment:
-    - DATASOURCE_URL=jdbc:postgresql://db:5432/goleador
