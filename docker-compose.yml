@@ -1,12 +1,12 @@
 version: '2'
 services:
   db:
-    image: goleador-db
+    image: ris58h/goleador-db
   main:
-    image: goleador-main
+    image: ris58h/goleador-main
     depends_on:
     - db
   worker:
-    image: goleador-worker
+    image: ris58h/goleador-worker
     depends_on:
     - db

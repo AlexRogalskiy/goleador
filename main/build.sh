@@ -1,1 +1,1 @@
-mvn clean package && docker build -t goleador-main .
+mvn clean package && docker build -t ris58h/goleador-main .
