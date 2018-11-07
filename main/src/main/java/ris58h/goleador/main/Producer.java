@@ -34,8 +34,8 @@ public class Producer {
     private long maxVideoDuration = DEFAULT_MAX_VIDEO_DURATION;
     private long channelCheckInterval = DEFAULT_CHANNEL_CHECK_INTERVAL;
     private long newChannelGap = DEFAULT_NEW_CHANNEL_GAP;
-    private long checkDefinitionDelay = DEFAULT_CHECK_DEFINITION_DELAY;
-    private long definitionGap = DEFAULT_DEFINITION_GAP;
+//    private long checkDefinitionDelay = DEFAULT_CHECK_DEFINITION_DELAY;
+//    private long definitionGap = DEFAULT_DEFINITION_GAP;
 
     public Producer(YoutubeAccess youtubeAccess, DataAccess dataAccess) {
         this.youtubeAccess = youtubeAccess;
@@ -172,11 +172,11 @@ public class Producer {
         this.newChannelGap = newChannelGap;
     }
 
-    public void setCheckDefinitionDelay(long checkDefinitionDelay) {
-        this.checkDefinitionDelay = checkDefinitionDelay;
-    }
+//    public void setCheckDefinitionDelay(long checkDefinitionDelay) {
+//        this.checkDefinitionDelay = checkDefinitionDelay;
+//    }
 
-    public void setDefinitionGap(long definitionGap) {
-        this.definitionGap = definitionGap;
-    }
+//    public void setDefinitionGap(long definitionGap) {
+//        this.definitionGap = definitionGap;
+//    }
 }
