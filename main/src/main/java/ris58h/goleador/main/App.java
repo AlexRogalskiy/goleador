@@ -21,8 +21,8 @@ public class App {
         appProperties.apply("producer.maxVideoDuration").map(Long::parseLong).ifPresent(producer::setMaxVideoDuration);
         appProperties.apply("producer.channelCheckInterval").map(Long::parseLong).ifPresent(producer::setChannelCheckInterval);
         appProperties.apply("producer.newChannelGap").map(Long::parseLong).ifPresent(producer::setNewChannelGap);
-//        appProperties.apply("producer.checkDefinitionDelay").map(Long::parseLong).ifPresent(producer::setCheckDefinitionDelay);
-//        appProperties.apply("producer.definitionGap").map(Long::parseLong).ifPresent(producer::setDefinitionGap);
+        appProperties.apply("producer.checkDefinitionDelay").map(Long::parseLong).ifPresent(producer::setCheckDefinitionDelay);
+        appProperties.apply("producer.definitionGap").map(Long::parseLong).ifPresent(producer::setDefinitionGap);
         YoutubeCommenter youtubeCommenter = new YoutubeCommenter(
                 appProperties.apply("google.app.clientId").get(),
                 appProperties.apply("google.app.clientSecret").get(),

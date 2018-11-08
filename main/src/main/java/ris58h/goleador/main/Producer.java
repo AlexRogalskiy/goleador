@@ -14,8 +14,8 @@ public class Producer {
     private static final long DEFAULT_MAX_VIDEO_DURATION = 12 * 60;
     private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 5 * 60;
     private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
-//    private static final long DEFAULT_CHECK_DEFINITION_DELAY = 5 * 60;
-//    private static final long DEFAULT_DEFINITION_GAP = 60 * 60;
+    private static final long DEFAULT_CHECK_DEFINITION_DELAY = 5 * 60;
+    private static final long DEFAULT_DEFINITION_GAP = 60 * 60;
 
     private static final Pattern SPLIT_TO_WORDS_PATTERN = Pattern.compile("\\W+");
     private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
@@ -35,8 +35,8 @@ public class Producer {
     private long maxVideoDuration = DEFAULT_MAX_VIDEO_DURATION;
     private long channelCheckInterval = DEFAULT_CHANNEL_CHECK_INTERVAL;
     private long newChannelGap = DEFAULT_NEW_CHANNEL_GAP;
-//    private long checkDefinitionDelay = DEFAULT_CHECK_DEFINITION_DELAY;
-//    private long definitionGap = DEFAULT_DEFINITION_GAP;
+    private long checkDefinitionDelay = DEFAULT_CHECK_DEFINITION_DELAY;
+    private long definitionGap = DEFAULT_DEFINITION_GAP;
 
     public Producer(YoutubeAccess youtubeAccess, DataAccess dataAccess) {
         this.youtubeAccess = youtubeAccess;
@@ -46,7 +46,7 @@ public class Producer {
     public void start() {
         log.info("Start Producer");
         new Thread(this::checkChannelsLoop).start();
-//        new Thread(this::checkSDVideosLoop).start();
+        new Thread(this::checkSDVideosLoop).start();
     }
 
     private void checkChannelsLoop() {
@@ -126,36 +126,36 @@ public class Producer {
         return null;
     }
 
-//    private void checkSDVideosLoop() {
-//        while (true) {
-//            try {
-//                long publishedAfter = System.currentTimeMillis() - (definitionGap * 1000);
-//                Collection<String> sdVideoIds = dataAccess.loadSDVideoIds(publishedAfter);
-//                if (!sdVideoIds.isEmpty()) {
-//                    log.info("Found " + sdVideoIds.size() + " SD videos: " + sdVideoIds);
-//                    List<Video> videos = youtubeAccess.getVideos(sdVideoIds); //TODO: load id & definition only
-//                    List<String> hdVideoIds = videos.stream()
-//                            .filter(video -> video.definition.equals("hd"))
-//                            .map(video -> video.id)
-//                            .collect(Collectors.toList());
-//                    if (!hdVideoIds.isEmpty()) {
-//                        log.info(hdVideoIds.size() + " SD videos became HD: " + hdVideoIds);
-//                        dataAccess.updateToHD(hdVideoIds);
-//                    }
-//                }
-//            } catch (Exception e) {
-//                log.error("Error processing SD videos", e);
-//            }
-//
-//            if (checkDefinitionDelay > 0) {
-//                try {
-//                    Thread.sleep(checkDefinitionDelay * 1000);
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        }
-//    }
+    private void checkSDVideosLoop() {
+        while (true) {
+            try {
+                long publishedAfter = System.currentTimeMillis() - (definitionGap * 1000);
+                Collection<String> sdVideoIds = dataAccess.loadSDVideoIds(publishedAfter);
+                if (!sdVideoIds.isEmpty()) {
+                    log.info("Found " + sdVideoIds.size() + " SD videos: " + sdVideoIds);
+                    List<Video> videos = youtubeAccess.getVideos(sdVideoIds); //TODO: load id & definition only
+                    List<String> hdVideoIds = videos.stream()
+                            .filter(video -> video.definition.equals("hd"))
+                            .map(video -> video.id)
+                            .collect(Collectors.toList());
+                    if (!hdVideoIds.isEmpty()) {
+                        log.info(hdVideoIds.size() + " SD videos became HD: " + hdVideoIds);
+                        dataAccess.updateToHD(hdVideoIds);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error processing SD videos", e);
+            }
+
+            if (checkDefinitionDelay > 0) {
+                try {
+                    Thread.sleep(checkDefinitionDelay * 1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
 
     public void setCheckChannelsDelay(long checkChannelsDelay) {
         this.checkChannelsDelay = checkChannelsDelay;
@@ -173,11 +173,11 @@ public class Producer {
         this.newChannelGap = newChannelGap;
     }
 
-//    public void setCheckDefinitionDelay(long checkDefinitionDelay) {
-//        this.checkDefinitionDelay = checkDefinitionDelay;
-//    }
+    public void setCheckDefinitionDelay(long checkDefinitionDelay) {
+        this.checkDefinitionDelay = checkDefinitionDelay;
+    }
 
-//    public void setDefinitionGap(long definitionGap) {
-//        this.definitionGap = definitionGap;
-//    }
+    public void setDefinitionGap(long definitionGap) {
+        this.definitionGap = definitionGap;
+    }
 }

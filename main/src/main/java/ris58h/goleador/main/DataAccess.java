@@ -85,41 +85,41 @@ public class DataAccess {
         }
     }
 
-//    public Collection<String> loadSDVideoIds(long publishedAfter) throws Exception {
-//        try (
-//                Connection connection = getConnection();
-//                PreparedStatement ps = connection.prepareStatement(" SELECT video_id " +
-//                        " FROM video " +
-//                        " WHERE definition = 'sd' AND published_at > ?");
-//        ) {
-//            ps.setLong(1, publishedAfter);
-//            try (ResultSet rs = ps.executeQuery()) {
-//                Collection<String> result = new ArrayList<>();
-//                while (rs.next()) {
-//                    String videoId = rs.getString(1);
-//                    result.add(videoId);
-//                }
-//                return result;
-//            }
-//        }
-//    }
-//
-//    public void updateToHD(List<String> videoIds) throws Exception {
-//        try (Connection connection = getConnection()) {
-//            String qMarks = videoIds.stream().map(v -> "?").collect(Collectors.joining(","));
-//            String inPart = '(' + qMarks + ')';
-//            try (PreparedStatement ps = connection.prepareStatement(" UPDATE video " +
-//                    " SET definition = 'hd' " +
-//                    " WHERE video_id IN " + inPart)) {
-//                int i = 1;
-//                for (String videoId : videoIds) {
-//                    ps.setString(i, videoId);
-//                    i++;
-//                }
-//                ps.execute();
-//            }
-//        }
-//    }
+    public Collection<String> loadSDVideoIds(long publishedAfter) throws Exception {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(" SELECT video_id " +
+                        " FROM video " +
+                        " WHERE definition = 'sd' AND published_at > ?");
+        ) {
+            ps.setLong(1, publishedAfter);
+            try (ResultSet rs = ps.executeQuery()) {
+                Collection<String> result = new ArrayList<>();
+                while (rs.next()) {
+                    String videoId = rs.getString(1);
+                    result.add(videoId);
+                }
+                return result;
+            }
+        }
+    }
+
+    public void updateToHD(List<String> videoIds) throws Exception {
+        try (Connection connection = getConnection()) {
+            String qMarks = videoIds.stream().map(v -> "?").collect(Collectors.joining(","));
+            String inPart = '(' + qMarks + ')';
+            try (PreparedStatement ps = connection.prepareStatement(" UPDATE video " +
+                    " SET definition = 'hd' " +
+                    " WHERE video_id IN " + inPart)) {
+                int i = 1;
+                for (String videoId : videoIds) {
+                    ps.setString(i, videoId);
+                    i++;
+                }
+                ps.execute();
+            }
+        }
+    }
 
     public void processUncommentedVideos(Consumer<VideoTimes> callback) throws Exception {
         try (Connection connection = getConnection()) {
