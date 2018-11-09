@@ -17,7 +17,7 @@ public class Producer {
     private static final long DEFAULT_CHECK_DEFINITION_DELAY = 5 * 60;
     private static final long DEFAULT_DEFINITION_GAP = 60 * 60;
 
-    private static final Pattern SPLIT_TO_WORDS_PATTERN = Pattern.compile("\\W+");
+    private static final Pattern SPLIT_TO_WORDS_PATTERN = Pattern.compile("[\\p{Punct}\\s]+");
     private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
             "выпуск",
             "выступления",
