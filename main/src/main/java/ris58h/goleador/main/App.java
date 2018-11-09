@@ -48,12 +48,6 @@ public class App {
                 throw new RuntimeException(e);
             }
         }
-        return key -> {
-            String property = properties.getProperty(key);
-            if (property == null) {
-                property = System.getProperty(key);
-            }
-            return Optional.ofNullable(property);
-        };
+        return key -> Optional.ofNullable(properties.getProperty(key));
     }
 }

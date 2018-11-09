@@ -1,7 +1,7 @@
 #!/bin/sh
 
-java \
-  -Ddatasource.url=$DATASOURCE_URL \
-  -Ddatasource.username=$DATASOURCE_USERNAME \
-  -Ddatasource.password=$DATASOURCE_PASSWORD \
-  -jar /goleador-worker.jar
+echo "datasource.url=${DATASOURCE_URL}" >> app.properties
+echo "datasource.username=${DATASOURCE_USERNAME}" >> app.properties
+echo "datasource.password=${DATASOURCE_PASSWORD}" >> app.properties
+
+java -jar /goleador-worker.jar app.properties
