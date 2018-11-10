@@ -6,11 +6,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class Commenter {
     private static final Logger log = LoggerFactory.getLogger(Commenter.class);
+
+    private static final List<String> COMMENT_FOOTERS = Arrays.asList(
+            "Лайк, если определено верно. Дислайк, если всё плохо.",
+            "Слава роботам!"
+    );
+    private static final Random RANDOM = new Random();
 
     private static final long DEFAULT_DELAY = 15;
 
@@ -82,7 +90,8 @@ public class Commenter {
             String timestamp = Utils.timestamp(time);
             sb.append(timestamp).append('\n');
         }
-        sb.append("\n").append("Лайк, если определено верно. Дислайк, если всё плохо.");
+        String footer = COMMENT_FOOTERS.get(RANDOM.nextInt(COMMENT_FOOTERS.size()));
+        sb.append("\n").append(footer);
         return sb.toString();
     }
 
