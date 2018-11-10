@@ -57,13 +57,14 @@ public class DataAccess {
 
     public void saveVideos(List<Video> videos) throws Exception {
         try (Connection connection = getConnection()) {
-            try (PreparedStatement ps = connection.prepareStatement(" INSERT INTO video (video_id, definition, published_at) " +
-                    " VALUES (?, ?, ?) " +
+            try (PreparedStatement ps = connection.prepareStatement(" INSERT INTO video (video_id, title, definition, published_at) " +
+                    " VALUES (?, ?, ?, ?) " +
                     " ON CONFLICT DO NOTHING")) {
                 for (Video video : videos) {
                     ps.setString(1, video.id);
-                    ps.setString(2, video.definition);
-                    ps.setLong(3, video.publishedAt);
+                    ps.setString(2, video.title);
+                    ps.setString(3, video.definition);
+                    ps.setLong(4, video.publishedAt);
                     ps.addBatch();
                 }
                 ps.executeBatch();

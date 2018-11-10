@@ -1,6 +1,7 @@
 CREATE TABLE video (
   id bigserial PRIMARY KEY,
   video_id varchar(20) UNIQUE NOT NULL,
+  title varchar(255),
   definition varchar(2),
   published_at bigint,
   times varchar(255),
