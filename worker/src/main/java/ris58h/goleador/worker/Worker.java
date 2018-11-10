@@ -53,7 +53,11 @@ public class Worker {
                     List<Integer> times = process(videoId, tempDirectory, mainProcessor);
                     long elapsedTime = System.currentTimeMillis() - timeBefore;
                     log.info("Video " + videoId + " has been processed in " + (elapsedTime / 1000) + " seconds");
-                    log.info("Times found for video " + videoId + ": " + times);
+                    if (times.isEmpty()) {
+                        log.info("No times found for video " + videoId);
+                    } else {
+                        log.info("Times found for video " + videoId + ": " + times);
+                    }
                     dataAccess.updateVideoTimes(videoId, times);
                 } catch (Exception e) {
                     log.error("Processing error for " + videoId + " video: " + e.getMessage(), e);
