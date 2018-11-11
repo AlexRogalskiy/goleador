@@ -10,6 +10,7 @@ public class YoutubeDLVideoUrlFetcher {
         String command = "youtube-dl -f " + format + " -g https://www.youtube.com/watch?v=" + videoId;
         Process process = Runtime.getRuntime().exec(command);
         if (!process.waitFor(1, TimeUnit.MINUTES)) {
+            process.destroyForcibly();
             throw new RuntimeException("Process timeout");
         }
         int exitCode = process.exitValue();

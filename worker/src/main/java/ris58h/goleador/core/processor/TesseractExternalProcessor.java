@@ -40,6 +40,7 @@ public class TesseractExternalProcessor implements Processor {
         }
         Process process = Runtime.getRuntime().exec(command);
         if (!process.waitFor(1, TimeUnit.MINUTES)) {
+            process.destroyForcibly();
             throw new RuntimeException("Process timeout");
         }
         int exitCode = process.exitValue();

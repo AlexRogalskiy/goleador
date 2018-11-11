@@ -14,6 +14,7 @@ public class FramesProcessor implements Processor {
         System.out.println("Extracting video frames");
         Process process = Runtime.getRuntime().exec(command);
         if (!process.waitFor(15, TimeUnit.MINUTES)) {
+            process.destroyForcibly();
             throw new RuntimeException("Process timeout");
         }
         int exitCode = process.exitValue();
