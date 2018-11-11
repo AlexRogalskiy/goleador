@@ -93,13 +93,10 @@ public class Worker {
     private static List<Integer> process(String videoId,
                                          Path tempDirectory,
                                          MainProcessor mainProcessor) throws Exception {
-        String videoUrl = YoutubeDLVideoUrlFetcher.fetchFor(videoId, FORMAT);
-        if (videoUrl == null) {
-            throw new RuntimeException("No URL found for video " + videoId);
-        }
-        log.info("URL for " + videoId + " video: " + videoUrl);
         String dirName = tempDirectory.toAbsolutePath().toString();
-        List<ScoreFrames> scoreFrames = mainProcessor.process(videoUrl, dirName);
+        String target = dirName + "/" + videoId + ".mp4";
+        YoutubeDL.download(videoId, FORMAT, target);
+        List<ScoreFrames> scoreFrames = mainProcessor.process(target, dirName);
         return Highlighter.times(scoreFrames);
     }
 
