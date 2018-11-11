@@ -95,8 +95,13 @@ public class Worker {
                                          MainProcessor mainProcessor) throws Exception {
         String dirName = tempDirectory.toAbsolutePath().toString();
         String target = dirName + "/" + videoId + ".mp4";
+        long t0 = System.currentTimeMillis();
         YoutubeDL.download(videoId, FORMAT, target);
+        long t1 = System.currentTimeMillis();
+        log.info("Video " + videoId + " has been downloaded in " + (t1 - t0 / 1000) + " seconds");
         List<ScoreFrames> scoreFrames = mainProcessor.process(target, dirName);
+        long t2 = System.currentTimeMillis();
+        log.info("Video file " + videoId + " has been processed in " + (t2 - t1 / 1000) + " seconds");
         return Highlighter.times(scoreFrames);
     }
 
