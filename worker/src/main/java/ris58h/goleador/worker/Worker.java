@@ -1,5 +1,6 @@
 package ris58h.goleador.worker;
 
+import com.rabbitmq.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ris58h.goleador.core.Highlighter;
@@ -7,23 +8,25 @@ import ris58h.goleador.core.MainProcessor;
 import ris58h.goleador.core.ScoreFrames;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Worker {
     private static final Logger log = LoggerFactory.getLogger(Worker.class);
 
     private static final String FORMAT = "136";
-    private static final long DEFAULT_DELAY = 15;
+    private static final String TASK_QUEUE_NAME = "task_queue";
+    private static final String RESULT_QUEUE_NAME = "result_queue";
 
-    private final DataAccess dataAccess;
+    private final String uri;
     private final MainProcessor mainProcessor;
 
-    private long delay = DEFAULT_DELAY;
-
-    public Worker(DataAccess dataAccess) {
-        this.dataAccess = dataAccess;
+    public Worker(String uri) {
+        this.uri = uri;
         mainProcessor = new MainProcessor();
     }
 
@@ -31,61 +34,64 @@ public class Worker {
         mainProcessor.init();
     }
 
-    public void start() {
+    public void start() throws Exception {
         log.info("Start Worker");
-        new Thread(this::workerLoop).start();
-    }
 
-    private void workerLoop() {
-        while (true) {
-            String videoId = null;
-            try {
-                videoId = dataAccess.fetchUnprocessedVideoId();
-            } catch (Exception e) {
-                log.error("Error while fetching unprocessed video: " + e.getMessage(), e);
-            }
-            if (videoId != null) {
-                log.info("Start processing video " + videoId);
-                Path tempDirectory = null;
-                try {
-                    tempDirectory = Files.createTempDirectory("goleador-");
-                    long timeBefore = System.currentTimeMillis();
-                    List<Integer> times = process(videoId, tempDirectory, mainProcessor);
-                    long elapsedTime = System.currentTimeMillis() - timeBefore;
-                    log.info("Video " + videoId + " has been processed in " + (elapsedTime / 1000) + " seconds");
-                    if (times.isEmpty()) {
-                        log.info("No times found for video " + videoId);
-                    } else {
-                        log.info("Times found for video " + videoId + ": " + times);
-                    }
-                    dataAccess.updateVideoTimes(videoId, times);
-                } catch (Exception e) {
-                    log.error("Processing error for " + videoId + " video: " + e.getMessage(), e);
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setUri(uri);
+        try (
+                Connection connection = factory.newConnection();
+                Channel channel = connection.createChannel()
+        ) {
+            channel.queueDeclare(RESULT_QUEUE_NAME, true, false, false, null);
+            channel.basicQos(1);
+            Consumer consumer = new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    String videoId = new String(body, StandardCharsets.UTF_8);
+                    System.out.println("Received task: " + videoId);
+                    List<Integer> times = Collections.emptyList();
+                    String error = null;
                     try {
-                        String error = e.getMessage();
+                        long timeBefore = System.currentTimeMillis();
+                        times = process(videoId);
+                        long elapsedTime = System.currentTimeMillis() - timeBefore;
+                        log.info("Video " + videoId + " has been processed in " + (elapsedTime / 1000) + " seconds");
+                        if (times.isEmpty()) {
+                            log.info("No times found for video " + videoId);
+                        } else {
+                            log.info("Times found for video " + videoId + ": " + times);
+                        }
+                    } catch (Throwable e) {
+                        log.error("Error for video " + videoId, e);
+                        error = e.getMessage();
                         if (error == null) {
                             error = e.getClass().getName();
                         }
-                        dataAccess.updateError(videoId, error);
-                    } catch (Exception ee) {
-                        log.error("Updating error: " + ee.getMessage(), e);
                     }
+                    String response = videoId + ":" + (error == null ? "ok:" + timesString(times) : "error:" + error);
+                    channel.basicPublish("", RESULT_QUEUE_NAME, null, response.getBytes());
+                    channel.basicAck(envelope.getDeliveryTag(), false);
                 }
-                if (tempDirectory != null) {
-                    try {
-                        Utils.deleteDirectory(tempDirectory);
-                    } catch (IOException e) {
-                        log.error("Error while deleting dir: " + e.getMessage(), e);
-                    }
-                }
-            }
+            };
+            channel.basicConsume(TASK_QUEUE_NAME, false, consumer);
+        }
+    }
 
-            if (delay > 0) {
-                try {
-                    Thread.sleep(delay * 1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+    private static String timesString(List<Integer> times) {
+        return times.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","));
+    }
+
+    private List<Integer> process(String videoId) throws Exception {
+        Path tempDirectory = null;
+        try {
+            tempDirectory = Files.createTempDirectory("goleador-");
+            return process(videoId, tempDirectory, mainProcessor);
+        } finally {
+            if (tempDirectory != null) {
+                Utils.deleteDirectory(tempDirectory);
             }
         }
     }
@@ -103,9 +109,5 @@ public class Worker {
         long t2 = System.currentTimeMillis();
         log.info("Video file " + videoId + " has been processed in " + (t2 - t1 / 1000) + " seconds");
         return Highlighter.times(scoreFrames);
-    }
-
-    public void setDelay(long delay) {
-        this.delay = delay;
     }
 }

@@ -30,13 +30,23 @@ public class App {
         );
         Commenter commenter = new Commenter(dataAccess, youtubeCommenter);
         appProperties.apply("commenter.delay").map(Long::parseLong).ifPresent(commenter::setDelay);
+        Processor processor = new Processor(
+                dataAccess,
+                appProperties.apply("rabbitmq.url").get()
+        );
+        appProperties.apply("processor.delay").map(Long::parseLong).ifPresent(processor::setDelay);
         try {
             dataAccess.init();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        producer.start();
-        commenter.start();
+        try {
+            producer.start();
+            commenter.start();
+            processor.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Function<String, Optional<String>> appProperties(String propertiesPath) {

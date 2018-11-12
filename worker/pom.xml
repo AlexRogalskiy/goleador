@@ -57,9 +57,9 @@
 
         <!-- Worker dependencies -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.2.5</version>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>5.5.0</version>
         </dependency>
     </dependencies>
 

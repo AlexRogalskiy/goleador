@@ -175,4 +175,35 @@ public class DataAccess {
             ps.executeUpdate();
         }
     }
+
+    public String fetchUnprocessedVideoId() throws Exception {
+        try (
+                Connection connection = getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet rs = statement.executeQuery(" SELECT video_id " +
+                        " FROM video " +
+                        " WHERE times IS NULL AND error IS NULL AND definition = 'hd' " +
+                        " LIMIT 1 ");
+        ) {
+            String videoId = rs.next() ? rs.getString(1) : null;
+            return videoId;
+        }
+    }
+
+    public void updateVideoTimes(String videoId, List<Integer> times) throws Exception {
+        String timeString = times.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","));
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(" UPDATE video " +
+                        " SET times = ? " +
+                        " WHERE video_id = ? "
+                );
+        ) {
+            ps.setString(1, timeString);
+            ps.setString(2, videoId);
+            ps.executeUpdate();
+        }
+    }
 }

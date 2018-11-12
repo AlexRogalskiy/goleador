@@ -11,19 +11,19 @@ public class App {
     public static void main(String[] args) {
         Function<String, Optional<String>> appProperties = appProperties(args.length == 1 ? args[0] : null);
 
-        DataAccess dataAccess = new DataAccess(
-                appProperties.apply("datasource.url").get(),
-                appProperties.apply("datasource.username").get(),
-                appProperties.apply("datasource.password").get());
-        Worker worker = new Worker(dataAccess);
-        appProperties.apply("worker.delay").map(Long::parseLong).ifPresent(worker::setDelay);
+        Worker worker = new Worker(
+                appProperties.apply("rabbitmq.uri").get()
+        );
         try {
-            dataAccess.init();
             worker.init();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        worker.start();
+        try {
+            worker.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Function<String, Optional<String>> appProperties(String propertiesPath) {
