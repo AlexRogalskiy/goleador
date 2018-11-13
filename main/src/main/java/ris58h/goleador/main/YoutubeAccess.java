@@ -58,6 +58,26 @@ public class YoutubeAccess {
     }
 
     public List<Video> getVideos(Collection<String> videoIds) throws Exception {
+        if (videoIds.size() > MAX_RESULTS) {
+            List<Video> result = new ArrayList<>();
+            List<String> batch = new ArrayList<>();
+            for (String videoId : videoIds) {
+                batch.add(videoId);
+                if (batch.size() == MAX_RESULTS) {
+                    result.addAll(getVideosInternal(batch));
+                    batch.clear();
+                }
+            }
+            if (!batch.isEmpty()) {
+                result.addAll(getVideosInternal(batch));
+            }
+            return result;
+        } else {
+            return getVideosInternal(videoIds);
+        }
+    }
+
+    private List<Video> getVideosInternal(Collection<String> videoIds) throws Exception {
         YouTube.Videos.List list = youTube.videos().list("id,snippet,contentDetails")
                 .setId(String.join(",", videoIds))
                 .setFields("items(id,snippet(publishedAt,title),contentDetails(duration,definition))")
