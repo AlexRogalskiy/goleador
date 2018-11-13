@@ -4,6 +4,7 @@ CREATE TABLE video (
   title varchar(255),
   definition varchar(2),
   published_at bigint,
+  processing_started_at bigint,
   times varchar(255),
   error varchar(255),
   comment_id varchar(50) UNIQUE

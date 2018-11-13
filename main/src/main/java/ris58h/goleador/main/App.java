@@ -32,9 +32,10 @@ public class App {
         appProperties.apply("commenter.delay").map(Long::parseLong).ifPresent(commenter::setDelay);
         Processor processor = new Processor(
                 dataAccess,
-                appProperties.apply("rabbitmq.url").get()
+                appProperties.apply("rabbitmq.uri").get()
         );
         appProperties.apply("processor.delay").map(Long::parseLong).ifPresent(processor::setDelay);
+        appProperties.apply("processor.processingGap").map(Long::parseLong).ifPresent(processor::setProcessingGap);
         try {
             dataAccess.init();
         } catch (Exception e) {

@@ -176,17 +176,21 @@ public class DataAccess {
         }
     }
 
-    public String fetchUnprocessedVideoId() throws Exception {
+    public String fetchUnprocessedVideoId(long processingStartedBefore) throws Exception {
         try (
                 Connection connection = getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet rs = statement.executeQuery(" SELECT video_id " +
+                PreparedStatement ps = connection.prepareStatement(" SELECT video_id " +
                         " FROM video " +
-                        " WHERE times IS NULL AND error IS NULL AND definition = 'hd' " +
+                        " WHERE times IS NULL " +
+                        "   AND error IS NULL " +
+                        "   AND definition = 'hd'" +
+                        "   AND (processing_started_at IS NULL OR processing_started_at < ?) " +
                         " LIMIT 1 ");
         ) {
-            String videoId = rs.next() ? rs.getString(1) : null;
-            return videoId;
+            ps.setLong(1, processingStartedBefore);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getString(1) : null;
+            }
         }
     }
 
@@ -202,6 +206,20 @@ public class DataAccess {
                 );
         ) {
             ps.setString(1, timeString);
+            ps.setString(2, videoId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void updateProcessingStartTime(String videoId, long time) throws Exception {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(" UPDATE video " +
+                        " SET processing_started_at = ? " +
+                        " WHERE video_id = ? "
+                );
+        ) {
+            ps.setLong(1, time);
             ps.setString(2, videoId);
             ps.executeUpdate();
         }

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,11 +19,13 @@ public class Processor {
     private static final String RESULT_QUEUE_NAME = "result_queue";
 
     private static final long DEFAULT_DELAY = 15;
+    private static final long DEFAULT_PROCESSING_GAP = 60 * 60;
 
     private final DataAccess dataAccess;
     private final String uri;
 
     private long delay = DEFAULT_DELAY;
+    private long processingGap = DEFAULT_PROCESSING_GAP;
 
     public Processor(DataAccess dataAccess, String uri) {
         this.dataAccess = dataAccess;
@@ -38,19 +41,21 @@ public class Processor {
                 Connection connection = factory.newConnection();
                 Channel channel = connection.createChannel()
         ) {
+            channel.queueDeclare(TASK_QUEUE_NAME, true, false, false, null);
             channel.queueDeclare(RESULT_QUEUE_NAME, true, false, false, null);
+
             Consumer consumer = new DefaultConsumer(channel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                    String result = new String(body, StandardCharsets.UTF_8);
-                    System.out.println("Received result: " + result);
-                    String[] split = result.split(":");
-                    String videoId = split[0];
-                    String status = split[1];
-                    String value = split[2];
                     try {
+                        String result = new String(body, StandardCharsets.UTF_8);
+                        System.out.println("Received result: " + result);
+                        String[] split = result.split(":");
+                        String videoId = split[0];
+                        String status = split[1];
+                        String value = split.length <= 2 ? "" : split[2];
                         if (status.equals("ok")) {
-                            List<Integer> times = Stream.of(value.split(","))
+                            List<Integer> times = value.isEmpty() ? Collections.emptyList() : Stream.of(value.split(","))
                                     .map(Integer::parseInt)
                                     .collect(Collectors.toList());
                             dataAccess.updateVideoTimes(videoId, times);
@@ -58,20 +63,30 @@ public class Processor {
                             dataAccess.updateError(videoId, value);
                         }
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        log.error("Response error", e);
                     }
                     channel.basicAck(envelope.getDeliveryTag(), false);
                 }
             };
             channel.basicConsume(RESULT_QUEUE_NAME, false, consumer);
 
-            channel.queueDeclare(TASK_QUEUE_NAME, true, false, false, null);
             while (true) {
-                String videoId = dataAccess.fetchUnprocessedVideoId();//TODO: don't fetch 'in process' videos
-                if (videoId != null) {
-                    channel.basicPublish("", TASK_QUEUE_NAME, null, videoId.getBytes(StandardCharsets.UTF_8));
+                String videoId = null;
+                try {
+                    long processingStartedBefore = System.currentTimeMillis() - (processingGap * 1000);
+                    videoId = dataAccess.fetchUnprocessedVideoId(processingStartedBefore);
+                } catch (Exception e) {
+                    log.error("Can't fetch unprocessed video", e);
                 }
-                //TODO: mark video as 'in process'
+                if (videoId != null) {
+                    log.info("Found unprocessed video " + videoId);
+                    try {
+                        channel.basicPublish("", TASK_QUEUE_NAME, null, videoId.getBytes(StandardCharsets.UTF_8));
+                        dataAccess.updateProcessingStartTime(videoId, System.currentTimeMillis());
+                    } catch (Exception e) {
+                        log.error("Error for unprocessed video " + videoId, e);
+                    }
+                }
                 if (delay > 0) {
                     try {
                         Thread.sleep(delay * 1000);
@@ -85,5 +100,9 @@ public class Processor {
 
     public void setDelay(long delay) {
         this.delay = delay;
+    }
+
+    public void setProcessingGap(long processingGap) {
+        this.processingGap = processingGap;
     }
 }
