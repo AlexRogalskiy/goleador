@@ -71,21 +71,19 @@ public class Processor {
             channel.basicConsume(RESULT_QUEUE_NAME, false, consumer);
 
             while (true) {
-                String videoId = null;
                 try {
                     long processingStartedBefore = System.currentTimeMillis() - (processingGap * 1000);
-                    videoId = dataAccess.fetchUnprocessedVideoId(processingStartedBefore);
+                    dataAccess.processUnprocessedVideos(processingStartedBefore, videoId -> {
+                        log.info("Process unprocessed video " + videoId);
+                        try {
+                            channel.basicPublish("", TASK_QUEUE_NAME, null, videoId.getBytes(StandardCharsets.UTF_8));
+                            dataAccess.updateProcessingStartTime(videoId, System.currentTimeMillis());
+                        } catch (Exception e) {
+                            log.error("Error for unprocessed video " + videoId, e);
+                        }
+                    });
                 } catch (Exception e) {
-                    log.error("Can't fetch unprocessed video", e);
-                }
-                if (videoId != null) {
-                    log.info("Found unprocessed video " + videoId);
-                    try {
-                        channel.basicPublish("", TASK_QUEUE_NAME, null, videoId.getBytes(StandardCharsets.UTF_8));
-                        dataAccess.updateProcessingStartTime(videoId, System.currentTimeMillis());
-                    } catch (Exception e) {
-                        log.error("Error for unprocessed video " + videoId, e);
-                    }
+                    log.error("Can't process unprocessed videos", e);
                 }
                 if (delay > 0) {
                     try {

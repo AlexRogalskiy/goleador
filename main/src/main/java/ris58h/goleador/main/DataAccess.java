@@ -176,20 +176,23 @@ public class DataAccess {
         }
     }
 
-    public String fetchUnprocessedVideoId(long processingStartedBefore) throws Exception {
-        try (
-                Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(" SELECT video_id " +
-                        " FROM video " +
-                        " WHERE times IS NULL " +
-                        "   AND error IS NULL " +
-                        "   AND definition = 'hd'" +
-                        "   AND (processing_started_at IS NULL OR processing_started_at < ?) " +
-                        " LIMIT 1 ");
-        ) {
-            ps.setLong(1, processingStartedBefore);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getString(1) : null;
+    public void processUnprocessedVideos(long processingStartedBefore, Consumer<String> callback) throws Exception {
+        try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement ps = connection.prepareStatement(" SELECT video_id " +
+                    " FROM video " +
+                    " WHERE times IS NULL " +
+                    "   AND error IS NULL " +
+                    "   AND definition = 'hd'" +
+                    "   AND (processing_started_at IS NULL OR processing_started_at < ?) " +
+                    " LIMIT 1 ")) {
+                ps.setLong(1, processingStartedBefore);
+                ps.setFetchSize(50);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        callback.accept(rs.getString(1));
+                    }
+                }
             }
         }
     }
