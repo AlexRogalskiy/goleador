@@ -49,7 +49,7 @@ public class Processor {
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                     try {
                         String result = new String(body, StandardCharsets.UTF_8);
-                        System.out.println("Received result: " + result);
+                        log.info("Received result: " + result);
                         String[] split = result.split(":");
                         String videoId = split[0];
                         String status = split[1];
