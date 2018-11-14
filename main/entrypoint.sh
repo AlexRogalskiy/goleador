@@ -9,4 +9,4 @@ echo "google.app.clientSecret=${GOOGLE_APP_CLIENT_SECRET}" >> app.properties
 echo "google.app.refreshToken=${GOOGLE_APP_REFRESH_TOKEN}" >> app.properties
 echo "rabbitmq.uri=${RABBITMQ_URI}" >> app.properties
 
-java -jar /goleador-main.jar app.properties
+java ${JAVA_OPTS} -jar /goleador-main.jar app.properties
