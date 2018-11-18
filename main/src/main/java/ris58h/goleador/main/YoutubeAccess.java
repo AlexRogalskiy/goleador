@@ -41,6 +41,7 @@ public class YoutubeAccess {
                     .setPublishedAfter(new DateTime(publishedAfter))
                     .setPublishedBefore(new DateTime(publishedBefore))
                     .setMaxResults(MAX_RESULTS)
+                    .setRegionCode("RU") //TODO: it's a hack to get relevant results but it shouldn't be hardcoded.
                     .setKey(key);
 
             if (pageToken != null) {
