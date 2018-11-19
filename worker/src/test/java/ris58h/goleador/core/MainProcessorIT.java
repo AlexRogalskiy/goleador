@@ -67,6 +67,11 @@ class MainProcessorIT {
         test("KyW4keXAT3s");
     }
 
+    @Test
+    void test_ncFTbp_UNk4() throws Exception {
+        test("ncFTbp_UNk4");
+    }
+
     //TODO static pixels recognition problem: video is too short
     @Test
     void test_PKzvJgRx1Zw() throws Exception {
