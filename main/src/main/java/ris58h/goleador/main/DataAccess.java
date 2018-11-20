@@ -185,7 +185,7 @@ public class DataAccess {
                     "   AND error IS NULL " +
                     "   AND definition = 'hd'" +
                     "   AND (processing_started_at IS NULL OR processing_started_at < ?) " +
-                    " LIMIT 1 ")) {
+                    " ORDER BY published_at ")) {
                 ps.setLong(1, processingStartedBefore);
                 ps.setFetchSize(50);
                 try (ResultSet rs = ps.executeQuery()) {
