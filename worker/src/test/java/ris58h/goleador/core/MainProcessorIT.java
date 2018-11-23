@@ -68,6 +68,11 @@ class MainProcessorIT {
     }
 
     @Test
+    void test_LvKlzhkEd80() throws Exception {
+        test("LvKlzhkEd80");
+    }
+
+    @Test
     void test_ncFTbp_UNk4() throws Exception {
         test("ncFTbp_UNk4");
     }

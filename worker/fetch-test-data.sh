@@ -17,6 +17,7 @@ for video_id in \
     "fM7TtiC-j_w" \
     "gLQf3Zp2n6g" \
     "KyW4keXAT3s" \
+    "LvKlzhkEd80" \
     "ncFTbp_UNk4" \
     "PKzvJgRx1Zw" \
     "QYlSNDwrq40" \
