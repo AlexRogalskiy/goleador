@@ -20,6 +20,7 @@ public class Producer {
     private static final Pattern SPLIT_TO_WORDS_PATTERN = Pattern.compile("[\\p{Punct}\\s]+");
     private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
             "выпуск",
+            "выступление",
             "выступления",
             "лучшие",
             "программа",
