@@ -1,6 +1,8 @@
 package ris58h.goleador.worker;
 
 import com.rabbitmq.client.*;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ris58h.goleador.core.Highlighter;
@@ -13,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Worker {
@@ -21,6 +24,10 @@ public class Worker {
     private static final String FORMAT = "136";
     private static final String TASK_QUEUE_NAME = "task_queue";
     private static final String RESULT_QUEUE_NAME = "result_queue";
+    private static final RetryPolicy DOWNLOAD_RETRY_POLICY = new RetryPolicy()
+            .retryOn(Exception.class)
+            .withDelay(30, TimeUnit.SECONDS)
+            .withMaxRetries(2);
 
     private final String uri;
     private final MainProcessor mainProcessor;
@@ -101,13 +108,18 @@ public class Worker {
         log.info("Process video " + videoId);
         String dirName = tempDirectory.toAbsolutePath().toString();
         String target = dirName + "/" + videoId + ".mp4";
-        long t0 = System.currentTimeMillis();
-        YoutubeDL.download(videoId, FORMAT, target);
-        long t1 = System.currentTimeMillis();
-        log.info("Video " + videoId + " has been downloaded in " + ((t1 - t0) / 1000) + " seconds");
+        Failsafe.with(DOWNLOAD_RETRY_POLICY)
+                .onFailedAttempt(e -> log.error("Video download attempt failed: " + e.getMessage()))
+                .run(() -> {
+                    long beforeDownload = System.currentTimeMillis();
+                    YoutubeDL.download(videoId, FORMAT, target);
+                    long downloadTime = System.currentTimeMillis() - beforeDownload;
+                    log.info("Video " + videoId + " has been downloaded in " + (downloadTime / 1000) + " seconds");
+                });
+        long beforeProcess = System.currentTimeMillis();
         List<ScoreFrames> scoreFrames = mainProcessor.process(target, dirName);
-        long t2 = System.currentTimeMillis();
-        log.info("Video file " + videoId + " has been processed in " + ((t2 - t1) / 1000) + " seconds");
+        long processTime = System.currentTimeMillis() - beforeProcess;
+        log.info("Video file " + videoId + " has been processed in " + (processTime / 1000) + " seconds");
         return Highlighter.times(scoreFrames);
     }
 }
