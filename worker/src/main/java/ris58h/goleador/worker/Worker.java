@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,7 @@ public class Worker {
             .retryOn(Exception.class)
             .withDelay(30, TimeUnit.SECONDS)
             .withMaxRetries(2);
+    private static final long VIDEO_DOWNLOAD_TIMEOUT = Duration.ofMinutes(15).toMillis();
 
     private final String uri;
     private final MainProcessor mainProcessor;
@@ -112,7 +114,7 @@ public class Worker {
                 .onFailedAttempt(e -> log.error("Video download attempt failed: " + e.getMessage()))
                 .run(() -> {
                     long beforeDownload = System.currentTimeMillis();
-                    YoutubeDL.download(videoId, FORMAT, target);
+                    YoutubeDL.download(videoId, FORMAT, target, VIDEO_DOWNLOAD_TIMEOUT);
                     long downloadTime = System.currentTimeMillis() - beforeDownload;
                     log.info("Video " + videoId + " has been downloaded in " + (downloadTime / 1000) + " seconds");
                 });

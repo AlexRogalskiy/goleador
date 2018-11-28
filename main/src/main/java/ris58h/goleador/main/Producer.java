@@ -3,6 +3,7 @@ package ris58h.goleador.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -10,12 +11,12 @@ import java.util.stream.Collectors;
 public class Producer {
     private static final Logger log = LoggerFactory.getLogger(Producer.class);
 
-    private static final long DEFAULT_CHECK_CHANNELS_DELAY = 15;
+    private static final long DEFAULT_CHECK_CHANNELS_DELAY = Duration.ofSeconds(15).toMillis();
     private static final long DEFAULT_MAX_VIDEO_DURATION = 12 * 60;
-    private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = 5 * 60;
-    private static final long DEFAULT_NEW_CHANNEL_GAP = 24 * 60 * 60;
-    private static final long DEFAULT_CHECK_DEFINITION_DELAY = 5 * 60;
-    private static final long DEFAULT_DEFINITION_GAP = 60 * 60;
+    private static final long DEFAULT_CHANNEL_CHECK_INTERVAL = Duration.ofMinutes(5).toMillis();
+    private static final long DEFAULT_NEW_CHANNEL_GAP = Duration.ofDays(1).toMillis();
+    private static final long DEFAULT_CHECK_DEFINITION_DELAY = Duration.ofMinutes(5).toMillis();
+    private static final long DEFAULT_DEFINITION_GAP = Duration.ofHours(1).toMillis();
 
     private static final Pattern SPLIT_TO_WORDS_PATTERN = Pattern.compile("[\\p{Punct}\\s]+");
     private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
@@ -55,7 +56,7 @@ public class Producer {
         while (true) {
             Collection<Channel> channels = null;
             try {
-                long processedUntil = System.currentTimeMillis() - (1000 * channelCheckInterval);
+                long processedUntil = System.currentTimeMillis() - channelCheckInterval;
                 channels = dataAccess.loadChannelsForProcessing(processedUntil);
             } catch (Exception e) {
                 log.error("Can't load channels", e);
@@ -72,7 +73,7 @@ public class Producer {
 
             if (checkChannelsDelay > 0) {
                 try {
-                    Thread.sleep(checkChannelsDelay * 1000);
+                    Thread.sleep(checkChannelsDelay);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -85,7 +86,7 @@ public class Producer {
         Long since = channel.since;
         long until = System.currentTimeMillis();
         if (since == null) {
-            since = until - (newChannelGap * 1000);
+            since = until - newChannelGap;
         }
         log.info("Check for new videos on channel " + channelId +  " since " + since + " until " + until);
         List<String> videoIds = youtubeAccess.getVideoIds(channelId, since, until);
@@ -131,7 +132,7 @@ public class Producer {
     private void checkSDVideosLoop() {
         while (true) {
             try {
-                long publishedAfter = System.currentTimeMillis() - (definitionGap * 1000);
+                long publishedAfter = System.currentTimeMillis() - definitionGap;
                 Collection<String> sdVideoIds = dataAccess.loadSDVideoIds(publishedAfter);
                 if (!sdVideoIds.isEmpty()) {
                     log.info("Found " + sdVideoIds.size() + " SD videos: " + sdVideoIds);
@@ -151,7 +152,7 @@ public class Producer {
 
             if (checkDefinitionDelay > 0) {
                 try {
-                    Thread.sleep(checkDefinitionDelay * 1000);
+                    Thread.sleep(checkDefinitionDelay);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

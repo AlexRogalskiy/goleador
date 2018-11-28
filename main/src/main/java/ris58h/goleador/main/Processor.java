@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,8 +19,8 @@ public class Processor {
     private static final String TASK_QUEUE_NAME = "task_queue";
     private static final String RESULT_QUEUE_NAME = "result_queue";
 
-    private static final long DEFAULT_DELAY = 15;
-    private static final long DEFAULT_PROCESSING_GAP = 60 * 60;
+    private static final long DEFAULT_DELAY = Duration.ofSeconds(15).toMillis();
+    private static final long DEFAULT_PROCESSING_GAP = Duration.ofHours(1).toMillis();
 
     private final DataAccess dataAccess;
     private final String uri;
@@ -72,7 +73,7 @@ public class Processor {
 
             while (true) {
                 try {
-                    long processingStartedBefore = System.currentTimeMillis() - (processingGap * 1000);
+                    long processingStartedBefore = System.currentTimeMillis() - processingGap;
                     dataAccess.processUnprocessedVideos(processingStartedBefore, videoId -> {
                         log.info("Process unprocessed video " + videoId);
                         try {
@@ -87,7 +88,7 @@ public class Processor {
                 }
                 if (delay > 0) {
                     try {
-                        Thread.sleep(delay * 1000);
+                        Thread.sleep(delay);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -20,7 +21,7 @@ public class Commenter {
     );
     private static final Random RANDOM = new Random();
 
-    private static final long DEFAULT_DELAY = 15;
+    private static final long DEFAULT_DELAY = Duration.ofSeconds(15).toMillis();
 
     private final DataAccess dataAccess;
     private final YoutubeCommenter youtubeCommenter;
@@ -72,7 +73,7 @@ public class Commenter {
 
             if (delay > 0) {
                 try {
-                    Thread.sleep(delay * 1000);
+                    Thread.sleep(delay);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
