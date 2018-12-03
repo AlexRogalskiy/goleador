@@ -10,12 +10,14 @@ import ris58h.goleador.core.MainProcessor;
 import ris58h.goleador.core.ScoreFrames;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,8 @@ public class Worker {
             .withDelay(30, TimeUnit.SECONDS)
             .withMaxRetries(2);
     private static final long VIDEO_DOWNLOAD_TIMEOUT = Duration.ofMinutes(15).toMillis();
+    private static final RetryPolicy RABBIT_CONNECTION_RETRY_POLICY = new RetryPolicy()
+            .retryOn(ConnectException.class).withDelay(10, TimeUnit.SECONDS);
 
     private final String uri;
     private final MainProcessor mainProcessor;
@@ -49,7 +53,9 @@ public class Worker {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setUri(uri);
 
-        Connection connection = factory.newConnection();
+        Connection connection = Failsafe.with(RABBIT_CONNECTION_RETRY_POLICY)
+                .onFailedAttempt((e) -> log.error("Can't connect to broker"))
+                .get((Callable<Connection>) factory::newConnection);
         Channel channel = connection.createChannel();
         channel.queueDeclare(TASK_QUEUE_NAME, true, false, false, null);
         channel.queueDeclare(RESULT_QUEUE_NAME, true, false, false, null);

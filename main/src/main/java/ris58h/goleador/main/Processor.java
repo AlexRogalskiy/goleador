@@ -2,14 +2,19 @@ package ris58h.goleador.main;
 
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.Channel;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +26,8 @@ public class Processor {
 
     private static final long DEFAULT_DELAY = Duration.ofSeconds(15).toMillis();
     private static final long DEFAULT_PROCESSING_GAP = Duration.ofHours(1).toMillis();
+    private static final RetryPolicy RABBIT_CONNECTION_RETRY_POLICY = new RetryPolicy()
+            .retryOn(ConnectException.class).withDelay(10, TimeUnit.SECONDS);
 
     private final DataAccess dataAccess;
     private final String uri;
@@ -39,7 +46,9 @@ public class Processor {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setUri(uri);
         try (
-                Connection connection = factory.newConnection();
+                Connection connection = Failsafe.with(RABBIT_CONNECTION_RETRY_POLICY)
+                        .onFailedAttempt((e) -> log.error("Can't connect to broker"))
+                        .get((Callable<Connection>) factory::newConnection);
                 Channel channel = connection.createChannel()
         ) {
             channel.queueDeclare(TASK_QUEUE_NAME, true, false, false, null);
