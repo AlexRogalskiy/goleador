@@ -55,6 +55,7 @@ public class Worker {
 
         Connection connection = Failsafe.with(RABBIT_CONNECTION_RETRY_POLICY)
                 .onFailedAttempt((e) -> log.error("Can't connect to broker"))
+                .onSuccess((r) -> log.info("Successfully connected to broker"))
                 .get((Callable<Connection>) factory::newConnection);
         Channel channel = connection.createChannel();
         channel.queueDeclare(TASK_QUEUE_NAME, true, false, false, null);
