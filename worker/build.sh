@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-mvn clean package -Djavacpp.platform=linux-x86_64
+mvnw clean package -Djavacpp.platform=linux-x86_64
 
 NAME="ris58h/goleador-worker"
 TAG=$(git log -1 --pretty=%h)

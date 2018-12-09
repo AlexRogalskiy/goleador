@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-mvn clean package
+mvnw clean package
 
 NAME="ris58h/goleador-main"
 TAG=$(git log -1 --pretty=%h)
