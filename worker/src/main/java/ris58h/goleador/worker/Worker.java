@@ -118,7 +118,7 @@ public class Worker {
         String dirName = tempDirectory.toAbsolutePath().toString();
         String target = dirName + "/" + videoId + ".mp4";
         Failsafe.with(DOWNLOAD_RETRY_POLICY)
-                .onFailedAttempt(e -> log.error("Video download attempt failed: " + e.getMessage()))
+                .onFailedAttempt(e -> log.error("Video " + videoId + " download attempt failed: " + e.getMessage()))
                 .run(() -> {
                     long beforeDownload = System.currentTimeMillis();
                     YoutubeDL.download(videoId, FORMAT, target, VIDEO_DOWNLOAD_TIMEOUT);
